@@ -4,7 +4,7 @@ flags = -std=c++17
 
 libs = -lGL -lGLU -lGLEW -lglfw
 
-additionalFiles = common/common.cpp
+additionalFiles = common/common.cpp camera/camera.cpp
 
 objFiles = ${notdir ${additionalFiles:.cpp=.o}}
 
@@ -15,6 +15,9 @@ main: main.cpp ${objFiles}
 	g++ -c $< -o $@ 
 
 %.o: common/%.cpp
+	g++ -c $< -o $@
+
+%.o: camera/%.cpp
 	g++ -c $< -o $@
 
 clean:

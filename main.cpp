@@ -1,5 +1,6 @@
 #include "common/common.h"
-#include <stdio.h>
+#include "camera/camera.h"
+#include "shader/shader.h"
 
 /* Declaring callbacks */
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -44,10 +45,81 @@ int main(void)
     }
     fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 
+    /* Vertices for a cube */
+    float vertices[] = {
+
+        // Coordinates        //Normals
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+    };
+
+    unsigned int VAO;
+    unsigned int VBO;
+
+    /* Creating all the necessary buffers and descriptors */
+    GLCall(glGenVertexArrays(1, &VAO));
+    GLCall(glGenBuffers(1, &VBO));
+
+    GLCall(glBindVertexArray(VAO));
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, VBO));
+    GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), (void *) vertices, GL_STATIC_DRAW));
+    GLCall(glEnableVertexAttribArray(0));
+    GLCall(glEnableVertexAttribArray(1));
+    GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(float) * 6, 0));
+    GLCall(glVertexAttribPointer(1, 3, GL_FLOAT, false, sizeof(float) * 6, (void *) (sizeof(float) * 3)));
+
+
+    Shader myShader = Shader("shader/standard.vertexShader", "shader/standard.fragmentShader");
+    Camera player = Camera(glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
     /* Initializing timer variables */
     double lastFrame = glfwGetTime();
     double currentFrame;
     double deltaTime;
+    glm::mat4 modelMatrix = glm::mat4(1);
+    modelMatrix[3][0] = 0.0f;
+    modelMatrix[3][1] = 0.0f;
+    modelMatrix[3][2] = 0.0f;
+    glm::mat4 matrix;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
@@ -59,6 +131,19 @@ int main(void)
 
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+
+        /* Binding buffers */
+        GLCall(glBindVertexArray(VAO));
+
+        /* Assembling the matrix used */
+        matrix = player.getPerspectiveMatrix() * player.getViewMatrix() * modelMatrix;
+
+        /* Setting up shader */
+        myShader.use();
+        myShader.setUniform("assembledMatrix", matrix);
+
+        GLCall(glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices)/(sizeof(float) * 6)));
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
