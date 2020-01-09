@@ -1,11 +1,15 @@
 #pragma once
 #include <signal.h>
+#include <vector>
+#include <array>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
+#include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 #define ASSERT(x) if (!(x)) raise(SIGTRAP);
 
@@ -18,3 +22,8 @@
 void GLClearErrors();
 
 bool GLLogCall(const char* function, const char* file, int line);
+
+std::string vectorToString(glm::vec3 v);
+
+std::string matrixToString(glm::mat4 matrix);
+std::string matrixToString(glm::mat3 matrix);
