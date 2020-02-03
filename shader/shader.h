@@ -1,7 +1,6 @@
 #pragma once
 #include "../common/common.h"
-#include <sstream>
-#include <fstream>
+
 #include <iostream>
 
 class Shader {
@@ -130,24 +129,5 @@ public:
 private:
 
 	GLuint program;
-
-	std::string loadFile(std::string fileSource) {
-		//Loading file
-		std::ifstream file(fileSource);
-
-		std::string charFile;
-
-		//If loading was successfull, we read the file and put it into a stringstream which in turn is converted to the target type
-		if (file) {
-			std::stringstream ss;
-			ss << file.rdbuf();
-			file.close();
-			charFile = ss.str();
-		} else {
-			std::cout << "Failed to load file: " << fileSource << "!" << std::endl;
-		}
-
-		return charFile;
-	}
 
 };

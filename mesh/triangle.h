@@ -3,14 +3,16 @@
 #include "../common/common.h"
 
 
-class MeshTriangle {
+class Triangle {
 
 public:
 
-    MeshTriangle(std::array<uint, 3> IDs);
-
+    Triangle(std::array<uint, 3> IDs, glm::vec3 normal);
+    
 private:
 
     std::array<uint, 3> m_IDs;
+
+    glm::vec3 m_Normal;
 
 };

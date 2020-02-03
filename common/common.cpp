@@ -1,5 +1,10 @@
 #include "common.h"
 
+#ifndef tris
+#define tris
+extern uint tris_per_frame;
+#endif
+
 void GLClearErrors() {
     while(glGetError() != GL_NO_ERROR);
 }
@@ -38,4 +43,22 @@ std::string matrixToString(const glm::mat3 matrix) {
 		output += "\n";
 	}
     return output;
+}
+
+std::string loadFile(std::string fileSource) {
+    //Loading file
+    std::ifstream file(fileSource);
+
+    std::string charFile;
+
+    //If loading was successfull, we read the file and put it into a stringstream which in turn is converted to the target type
+    if (file) {
+        std::stringstream ss;
+        ss << file.rdbuf();
+        file.close();
+        charFile = ss.str();
+    } else {
+        std::cout << "Failed to load file: " << fileSource << "!" << std::endl;
+    }
+    return charFile;
 }

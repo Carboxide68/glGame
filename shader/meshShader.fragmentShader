@@ -1,0 +1,16 @@
+#version 330 core
+
+in vec3 FragPos;
+
+out vec4 color;
+
+uniform vec3 playerPos;
+uniform vec3 objColor;
+
+void main() {
+    // float f = 1/pow(exp(length(playerPos - FragPos) * 0.1), 2);
+    // vec3 rgb =  (1 - f) * vec3(0.7) + objColor * f;
+    vec3 rgb = vec3(mod(floor(FragPos.x * 67), 40)/40, mod(floor(FragPos.y * 67), 40)/40, mod(floor(FragPos.z * 67), 40)/40);
+    // vec3 rgb = vec3(1);
+    color = vec4(rgb, 1.0f);
+}

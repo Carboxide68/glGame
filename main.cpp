@@ -1,3 +1,4 @@
+#include "mesh/mesh.h"
 #include "common/common.h"
 #include "camera/camera.h"
 #include "shader/shader.h"
@@ -16,6 +17,9 @@ bool cursorMode = true;
 double lastXPos = 0;
 double lastYPos = 0;
 float movementspeed = 0.05f;
+float pi = 3.1415926535897932384626433832;
+
+bool state = true;
 
 Camera player;
 glm::vec3 movement;
@@ -113,7 +117,40 @@ int main(void) {
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
     };
 
+    std::vector<glm::vec3> verts = {
+        glm::vec3(-0.5f, -0.5f, 0.5f),
+        glm::vec3(0.5f, -0.5f, 0.5f),
+        glm::vec3(0.5f, 0.5f, 0.5f),
+        glm::vec3(-0.5f, 0.5f, 0.5f),
+        glm::vec3(-0.5f, -0.5f, -0.5f),
+        glm::vec3(0.5f, -0.5f, -0.5f),
+        glm::vec3(0.5f, 0.5f, -0.5f),
+        glm::vec3(-0.5f, 0.5f, -0.5f)
+    };
+
+    std::vector<std::array<ushort, 3>> triangles = {
+        {0, 2, 1},
+        {0, 2, 3},
+        {3, 4, 0},
+        {3, 4, 7},
+        {4, 1, 0},
+        {4, 1, 5},
+        {5, 7, 6},
+        {5, 7, 4},
+        {2, 5, 6},
+        {2, 5, 1},
+        {7, 2, 6},
+        {7, 2, 3},
+    };
+
     VertexArray VAO;
+
+    Mesh newObject;
+    newObject.parseFile("models/USN.obj");
+
+    newObject.loadMesh();
+    newObject.temp_setPosition(glm::vec3(5.0f, 5.0f, 5.0f));
+    newObject.temp_scale(20.0f);
 
     VAO.bufferData(sizeof(vertices), (void *)vertices);
     VAO.addAttrib(GL_FLOAT, 3);
@@ -128,9 +165,11 @@ int main(void) {
     double currentFrame;
     double deltaTime;
     glm::mat4 modelMatrix = glm::mat4(1);
-    modelMatrix[3][0] = 0.0f;
-    modelMatrix[3][1] = 0.0f;
-    modelMatrix[3][2] = 0.0f;
+    modelMatrix[3][0] = 5.0f;
+    modelMatrix[3][1] = 5.0f;
+    modelMatrix[3][2] = 5.0f;
+
+
     glm::mat4 matrix;
 
     IMGUI_CHECKVERSION();
@@ -140,6 +179,7 @@ int main(void) {
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
+    float rotAmount = 0.00f;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
@@ -165,19 +205,31 @@ int main(void) {
         player.move(fixedMovement);
 
         /* Binding buffers */
-        VAO.use();
+        // VAO.use();
 
         /* Assembling the matrix used */
-        matrix = player.getPerspectiveMatrix() * player.getViewMatrix() * modelMatrix;
+        // matrix = player.getPerspectiveMatrix() * player.getViewMatrix() * modelMatrix;
 
-        /* Setting up shaders */
-        myShader.use();
-        myShader.setUniform("assembledMatrix", matrix);
-        myShader.setUniform("model", modelMatrix);
-        myShader.setUniform("playerPos", player.getPosition());
-        myShader.setUniform("objColor", glm::vec3(0.6f, 0.30196078431f, 0.0431372549f));
+        // /* Setting up shaders */
+        // myShader.use();
+        // myShader.setUniform("assembledMatrix", matrix);
+        // myShader.setUniform("model", modelMatrix);
+        // myShader.setUniform("playerPos", player.getPosition());
+        // myShader.setUniform("objColor", glm::vec3(0.6f, 0.30196078431f, 0.0431372549f));
 
-        VAO.drawArrays(36);
+        // VAO.drawArrays(36);
+        // for (int i = 0; i < 31; i++) {
+            // newObject.temp_rotateY(pi/31 * rotAmount);
+            // newObject.temp_rotateX(pi/31 * rotAmount);
+        newObject.meshShader.use();
+        newObject.meshShader.setUniform("playerPos", player.getPosition());
+        newObject.meshShader.setUniform("objColor", glm::vec3(0.6f, 0.30196078431f, 0.0431372549f));
+        newObject.draw(player);
+        // }
+
+        // newObject.temp_resetModel();
+
+
         glm::vec3 looking = player.getLookingDir();
         glm::vec3 position = player.getPosition();
         ImGui::Begin("main");
@@ -186,6 +238,7 @@ int main(void) {
         ImGui::InputFloat3("Position", player.getPositionValuePtr());
         ImGui::Text("MouseX: %f, MouseY: %f", lastXPos, lastYPos);
         ImGui::InputFloat("Movementspeed", &movementspeed, 0.01, 0.1, "%.3f");
+        ImGui::InputFloat("Object rotation", &rotAmount, 0.001, 0.01, "%.3f");
         ImGui::End();
 
         ImGui::Begin("matrix");
@@ -265,6 +318,17 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
                 cursorMode = true;
             }
             break;
+
+        case GLFW_KEY_LEFT_ALT:
+            if (mod == 0) break;
+            if (state) {
+                GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+                state = false;
+            }
+            else {
+                GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)); 
+                state = true;
+            }
 
         default:
             break;

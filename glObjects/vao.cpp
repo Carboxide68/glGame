@@ -2,9 +2,12 @@
 
 VertexArray::VertexArray() {
 
+    m_IndexType = GL_UNSIGNED_SHORT;
+
     GLCall(glGenVertexArrays(1, &m_IdVAO));
     use();
     VBO.use();
+    IBO.use();
     disuse();
 }
 

@@ -5,6 +5,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
+#include <sstream>
+#include <fstream>
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -27,3 +29,5 @@ std::string vectorToString(glm::vec3 v);
 
 std::string matrixToString(glm::mat4 matrix);
 std::string matrixToString(glm::mat3 matrix);
+
+std::string loadFile(std::string fileSource);

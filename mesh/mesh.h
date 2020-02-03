@@ -1,6 +1,10 @@
 #pragma once
 
 #include "../common/common.h"
+#include "../glObjects/vao.h"
+#include "../glObjects/vbo.h"
+#include "../shader/shader.h"
+#include "../camera/camera.h"
 #include "node.h"
 #include <random>
 
@@ -19,31 +23,57 @@ public:
 
     void addVertices(std::vector<glm::vec3> vertices);
 
-    void createTriangle(std::array<int, 3> indices);
+    void createTriangle(std::array<ushort, 3> indices);
+
+    void createTriangles(std::vector<std::array<ushort, 3>> triangles);
 
     void createInstance(glm::mat4 modelMatrix);
 
-    void draw();
+    void loadMesh();
+
+    void draw(const Camera &camera);
+
+    void temp_setPosition(glm::vec3 positions);
+    void temp_scale(float scale);
+    void temp_rotateX(float angle);
+    void temp_rotateY(float angle);
+    void temp_rotateZ(float angle);
+    void temp_resetModel();
+    
+    void parseFile(std::string file);
+
+    Shader meshShader;
 
 private:
 
-    struct VoidWithSize {
-        void *data;
-        uint size;
-    };
+    // struct VoidWithSize {
+    //     void *data;
+    //     uint size;
+    // };
 
-    VoidWithSize m_ModelTextures;
-                          
-    std::vector<Node> m_Vertices;
-    std::vector<std::array<uint, 3>> m_Surfaces;
+    // VoidWithSize m_ModelTextures;
 
-    std::vector<glm::mat4> m_Instances;
-    uint m_TextureId;
+    VertexArray m_VAO;
+    
+    glm::mat4 m_ModelMatrix;
+  
+    // std::vector<Node> m_Vertices;
+    std::vector<glm::vec3> m_Vertices;
+    std::vector<std::array<ushort, 3>> m_Surfaces;
+
+    // std::vector<glm::mat4> m_Instances;
+    // uint m_TextureId;
 
     std::mt19937 m_rGen;
 
-    void assembleModelTexture();
+    // void assembleModelTexture();
 
-    void setupTexture();
+    // void setupTexture();
+
+    bool m_MeshLoaded;
+    float temp_scalev = 1.0f;
+
+    void parseVertex(std::string line);
+    void parseFace(std::string line);
 
 };
