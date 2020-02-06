@@ -2,7 +2,7 @@
 
 #ifndef tris
 #define tris
-extern uint tris_per_frame;
+uint tris_per_frame = 0;
 #endif
 
 void GLClearErrors() {

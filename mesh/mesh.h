@@ -6,6 +6,7 @@
 #include "../shader/shader.h"
 #include "../camera/camera.h"
 #include "node.h"
+#include "triangle.h"
 #include <random>
 
 /* 
@@ -23,9 +24,9 @@ public:
 
     void addVertices(std::vector<glm::vec3> vertices);
 
-    void createTriangle(std::array<ushort, 3> indices);
+    void createTriangle(std::array<uint, 3> indices, glm::vec3 normal);
 
-    void createTriangles(std::vector<std::array<ushort, 3>> triangles);
+    void createTriangles(std::vector<std::array<uint, 3>> triangles, std::vector<glm::vec3> normals);
 
     void createInstance(glm::mat4 modelMatrix);
 
@@ -58,8 +59,8 @@ private:
     glm::mat4 m_ModelMatrix;
   
     // std::vector<Node> m_Vertices;
-    std::vector<glm::vec3> m_Vertices;
-    std::vector<std::array<ushort, 3>> m_Surfaces;
+    std::vector<Node> m_Vertices;
+    std::vector<Triangle> m_Surfaces;
 
     // std::vector<glm::mat4> m_Instances;
     // uint m_TextureId;

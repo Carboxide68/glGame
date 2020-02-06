@@ -31,3 +31,9 @@ std::string matrixToString(glm::mat4 matrix);
 std::string matrixToString(glm::mat3 matrix);
 
 std::string loadFile(std::string fileSource);
+
+template <typename T>
+struct ErrWithData {
+    T DATA;
+    int error;
+};

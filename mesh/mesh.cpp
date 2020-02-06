@@ -10,19 +10,13 @@ Mesh::Mesh() : meshShader("shader/meshShader.vertexShader", "shader/meshShader.f
 
 void Mesh::addVertex(glm::vec3 vertex) {
     
-    // Node node = {m_rGen(), vertex};
-    m_Vertices.push_back(vertex);
+    m_Vertices.push_back({m_rGen(), vertex});
 
 }
-// void Mesh::addVertex(glm::vec3 vertex) {
-    
-//     m_Vertices.push_back(Node(m_rGen(), vertex));
-
-// }
 
 void Mesh::addVertices(std::vector<glm::vec3> vertices) {
     for (auto i = vertices.begin(); i != vertices.end(); i++) {
-        m_Vertices.push_back(*i);
+        m_Vertices.push_back({m_rGen(), *i});
     }
 }
 
@@ -32,20 +26,24 @@ void Mesh::addVertices(std::vector<glm::vec3> vertices) {
 //     }
 // }
 
-void Mesh::createTriangle(std::array<ushort, 3> indices) {
+void Mesh::createTriangle(std::array<uint, 3> indices, glm::vec3 normal) {
 
-    std::array<ushort, 3> IDs;
+    
 
     // for (int i = 0; i < indices.size(); i++) {
     //     IDs[i] = m_Vertices[i].getId();
     // }
 
-    m_Surfaces.push_back(indices);
+    m_Surfaces.push_back(Triangle({m_Vertices[indices[0]].ID, m_Vertices[indices[1]].ID, m_Vertices[indices[2]].ID}, normal));
 }
 
-void Mesh::createTriangles(std::vector<std::array<ushort, 3>> triangles) {
-    for (auto i = triangles.begin(); i != triangles.end(); i++) {
-        createTriangle(*i);
+void Mesh::createTriangles(std::vector<std::array<uint, 3>> triangles, std::vector<glm::vec3> normals) {
+
+    if (normals.size() < triangles.size())
+        return;
+
+    for (uint i = 0; i < triangles.size(); i++) {
+        createTriangle(triangles[i], normals[i]);
     }
 }
 
@@ -62,7 +60,7 @@ void Mesh::createTriangles(std::vector<std::array<ushort, 3>> triangles) {
 //     }
 // }
 
-void Mesh::loadMesh() {
+void Mesh::loadMesh() { //IMPORTANT
     
     ushort indexRaw[m_Surfaces.size() * 3];
     float vertexRaw[m_Vertices.size() * 3];
@@ -184,6 +182,7 @@ void Mesh::parseVertex(std::string line) {
 
 void Mesh::parseFace(std::string line) {
     ushort indices[7];
+    glm::vec3 normals;
     uint count = sscanf(line.c_str(), "%*s %hu %*s %hu %*s %hu %*s %hu %*s %hu %*s %hu %*s %hu %*s", &indices[0], &indices[1], &indices[2], &indices[3], &indices[4], &indices[5], &indices[6]);
     // printf("%hu %hu %hu\n", indices[0], indices[1], indices[2]);
     if (count == 3) {
