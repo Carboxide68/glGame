@@ -26,24 +26,21 @@ void Mesh::addVertices(std::vector<glm::vec3> vertices) {
 //     }
 // }
 
-void Mesh::createTriangle(std::array<uint, 3> indices, glm::vec3 normal) {
+void Mesh::createTriangle(std::array<uint, 3> indices) {
+    createTriangle(indices, {glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f)});
+}
 
-    
-
-    // for (int i = 0; i < indices.size(); i++) {
-    //     IDs[i] = m_Vertices[i].getId();
-    // }
-
+void Mesh::createTriangle(std::array<uint, 3> indices, std::array<glm::vec3, 3> normal) {
     m_Surfaces.push_back(Triangle({m_Vertices[indices[0]].ID, m_Vertices[indices[1]].ID, m_Vertices[indices[2]].ID}, normal));
 }
 
-void Mesh::createTriangles(std::vector<std::array<uint, 3>> triangles, std::vector<glm::vec3> normals) {
+void Mesh::createTriangles(std::vector<std::array<uint, 3>> triangles, std::vector<std::array<glm::vec3, 3>> normals) {
 
     if (normals.size() < triangles.size())
         return;
 
     for (uint i = 0; i < triangles.size(); i++) {
-        createTriangle(triangles[i], normals[i]);
+        createTriangle(triangles[i], {normals[i][0], normals[i][1], normals[i][2]});
     }
 }
 
@@ -60,26 +57,18 @@ void Mesh::createTriangles(std::vector<std::array<uint, 3>> triangles, std::vect
 //     }
 // }
 
-void Mesh::loadMesh() { //IMPORTANT
+void Mesh::loadMesh() {
     
-    ushort indexRaw[m_Surfaces.size() * 3];
-    float vertexRaw[m_Vertices.size() * 3];
-    uint indexSize = sizeof(uint) * 3 * m_Surfaces.size();
-    uint vertexSize = sizeof(float) * 3 * m_Vertices.size();
+    SurfaceGeometry geometry[m_Surfaces.size()];
+
     for (uint i = 0; i < m_Surfaces.size(); i++) {
-        indexRaw[i * 3] = m_Surfaces[i][0];
-        indexRaw[i * 3 + 1] = m_Surfaces[i][1];
-        indexRaw[i * 3 + 2] = m_Surfaces[i][2];
+        m_Surfaces[i].generateNormal(m_Vertices);
+        geometry[i] = m_Surfaces[i].assembleGeometry(m_Vertices);
     }
 
-    for (uint i = 0; i < m_Vertices.size(); i++) {
-        vertexRaw[i * 3] = m_Vertices[i][0];
-        vertexRaw[i * 3 + 1] = m_Vertices[i][1];
-        vertexRaw[i * 3 + 2] = m_Vertices[i][2];
-    }
-    m_VAO.bufferData(vertexSize, static_cast<void*>(vertexRaw));
-    m_VAO.bufferIndices(indexSize, static_cast<void*>(indexRaw));
+    m_VAO.bufferData(sizeof(geometry), (void*)geometry);
 
+    m_VAO.addAttrib(GL_FLOAT, 3);
     m_VAO.addAttrib(GL_FLOAT, 3);
 
     m_MeshLoaded = true;
@@ -91,7 +80,7 @@ void Mesh::draw(const Camera &camera) {
         meshShader.use();
         meshShader.setUniform("assembledMatrix", assembledMatrix);
         meshShader.setUniform("model", m_ModelMatrix);
-        m_VAO.drawIndices(m_Surfaces.size() * 3);
+        m_VAO.drawArrays(m_Surfaces.size() * 3);
     }
 }
 
@@ -176,20 +165,19 @@ void Mesh::parseFile(std::string file) {
 void Mesh::parseVertex(std::string line) {
     float vertices[3];
     sscanf(line.c_str(), "%*s %f %f %f %*s", &vertices[0], &vertices[1], &vertices[2]);
-    // printf("%f %f %f\n", vertices[0], vertices[1], vertices[2]);
     addVertex(glm::vec3(vertices[0], vertices[1], vertices[2]));
 }
 
 void Mesh::parseFace(std::string line) {
     ushort indices[7];
-    glm::vec3 normals;
+
     uint count = sscanf(line.c_str(), "%*s %hu %*s %hu %*s %hu %*s %hu %*s %hu %*s %hu %*s %hu %*s", &indices[0], &indices[1], &indices[2], &indices[3], &indices[4], &indices[5], &indices[6]);
     // printf("%hu %hu %hu\n", indices[0], indices[1], indices[2]);
     if (count == 3) {
         createTriangle({indices[0] - 1, indices[1] - 1, indices[2] - 1});
     } else if (count == 4) {
         createTriangle({indices[0] - 1, indices[1] - 1, indices[2] - 1});
-        createTriangle({indices[0] - 1, indices[3] - 1, indices[2] - 1});
+        createTriangle({indices[3] - 1, indices[0] - 1, indices[2] - 1});
     }
 }
 

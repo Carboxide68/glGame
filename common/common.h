@@ -34,6 +34,6 @@ std::string loadFile(std::string fileSource);
 
 template <typename T>
 struct ErrWithData {
-    T DATA;
+    T data;
     int error;
 };
