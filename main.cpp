@@ -71,90 +71,85 @@ int main(void) {
     GLCall(glCullFace(GL_FRONT_AND_BACK));
 
     /* Vertices for a cube */
-    float vertices[] = {
+    // float vertices[] = {
 
-        // Coordinates        //Normals
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+    //     // Coordinates        //Normals
+    //     -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+    //      0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+    //      0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+    //      0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+    //     -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+    //     -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
 
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+    //     -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+    //      0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+    //      0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+    //      0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+    //     -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+    //     -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
 
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+    //     -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+    //     -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+    //     -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+    //     -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+    //     -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+    //     -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+    //      0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+    //      0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+    //      0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+    //      0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+    //      0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+    //      0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
 
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+    //     -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+    //      0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+    //      0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+    //      0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+    //     -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+    //     -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-    };
+    //     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+    //      0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+    //      0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+    //      0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+    //     -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+    //     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+    // };
 
-    std::vector<glm::vec3> verts = {
-        glm::vec3(-0.5f, -0.5f, 0.5f),
-        glm::vec3(0.5f, -0.5f, 0.5f),
-        glm::vec3(0.5f, 0.5f, 0.5f),
-        glm::vec3(-0.5f, 0.5f, 0.5f),
-        glm::vec3(-0.5f, -0.5f, -0.5f),
-        glm::vec3(0.5f, -0.5f, -0.5f),
-        glm::vec3(0.5f, 0.5f, -0.5f),
-        glm::vec3(-0.5f, 0.5f, -0.5f)
-    };
+    // std::vector<glm::vec3> verts = {
+    //     glm::vec3(-0.5f, -0.5f, 0.5f),
+    //     glm::vec3(0.5f, -0.5f, 0.5f),
+    //     glm::vec3(0.5f, 0.5f, 0.5f),
+    //     glm::vec3(-0.5f, 0.5f, 0.5f),
+    //     glm::vec3(-0.5f, -0.5f, -0.5f),
+    //     glm::vec3(0.5f, -0.5f, -0.5f),
+    //     glm::vec3(0.5f, 0.5f, -0.5f),
+    //     glm::vec3(-0.5f, 0.5f, -0.5f)
+    // };
 
-    std::vector<std::array<ushort, 3>> triangles = {
-        {0, 2, 1},
-        {0, 2, 3},
-        {3, 4, 0},
-        {3, 4, 7},
-        {4, 1, 0},
-        {4, 1, 5},
-        {5, 7, 6},
-        {5, 7, 4},
-        {2, 5, 6},
-        {2, 5, 1},
-        {7, 2, 6},
-        {7, 2, 3},
-    };
+    // std::vector<std::array<ushort, 3>> triangles = {
+    //     {0, 2, 1},
+    //     {0, 2, 3},
+    //     {3, 4, 0},
+    //     {3, 4, 7},
+    //     {4, 1, 0},
+    //     {4, 1, 5},
+    //     {5, 7, 6},
+    //     {5, 7, 4},
+    //     {2, 5, 6},
+    //     {2, 5, 1},
+    //     {7, 2, 6},
+    //     {7, 2, 3},
+    // };
 
-    VertexArray VAO;
 
     Mesh newObject;
-    newObject.parseFile("models/USN.obj");
+    newObject.parseFile("models/Apartment.obj");
 
     newObject.loadMesh();
     newObject.temp_setPosition(glm::vec3(5.0f, 5.0f, 5.0f));
-    newObject.temp_scale(20.0f);
-
-    VAO.bufferData(sizeof(vertices), (void *)vertices);
-    VAO.addAttrib(GL_FLOAT, 3);
-    VAO.addAttrib(GL_FLOAT, 3);
+    newObject.temp_scale(0.01f);
 
     Shader myShader = Shader("shader/standard.vertexShader", "shader/standard.fragmentShader");
     player = Camera(glm::vec3(-3.0f, -3.0f, -3.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -180,6 +175,7 @@ int main(void) {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
     float rotAmount = 0.00f;
+    glm::vec3 lightPos = glm::vec3(5.0f, 8.0f, 5.0f);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
@@ -196,7 +192,7 @@ int main(void) {
 
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
         /* Tick based events */
         glm::vec3 fixedMovement = ( movement.z * glm::normalize(player.getLookingDir() * glm::vec3(1, 0, 1)) + 
@@ -204,31 +200,16 @@ int main(void) {
                                     movement.y * glm::vec3(0, 1, 0));
         player.move(fixedMovement);
 
-        /* Binding buffers */
-        // VAO.use();
-
-        /* Assembling the matrix used */
-        // matrix = player.getPerspectiveMatrix() * player.getViewMatrix() * modelMatrix;
-
-        // /* Setting up shaders */
-        // myShader.use();
-        // myShader.setUniform("assembledMatrix", matrix);
-        // myShader.setUniform("model", modelMatrix);
-        // myShader.setUniform("playerPos", player.getPosition());
-        // myShader.setUniform("objColor", glm::vec3(0.6f, 0.30196078431f, 0.0431372549f));
-
-        // VAO.drawArrays(36);
-        // for (int i = 0; i < 31; i++) {
-            // newObject.temp_rotateY(pi/31 * rotAmount);
-            // newObject.temp_rotateX(pi/31 * rotAmount);
         newObject.meshShader.use();
         newObject.meshShader.setUniform("playerPos", player.getPosition());
         newObject.meshShader.setUniform("objColor", glm::vec3(0.6f, 0.30196078431f, 0.0431372549f));
+        newObject.meshShader.setUniform("light.color", glm::vec3(0.7f));
+        newObject.meshShader.setUniform("light.ambient", glm::vec3(0.1f));
+        newObject.meshShader.setUniform("light.position", lightPos);
+        newObject.meshShader.setUniform("shininess", 32.0f);
         newObject.draw(player);
-        // }
 
         // newObject.temp_resetModel();
-
 
         glm::vec3 looking = player.getLookingDir();
         glm::vec3 position = player.getPosition();
@@ -236,6 +217,7 @@ int main(void) {
         ImGui::Text("FPS: %f", 1/deltaTime);
         ImGui::Text("Looking direction: %f, %f, %f", looking.x, looking.y, looking.z);
         ImGui::InputFloat3("Position", player.getPositionValuePtr());
+        ImGui::InputFloat3("Light position", glm::value_ptr(lightPos));
         ImGui::Text("MouseX: %f, MouseY: %f", lastXPos, lastYPos);
         ImGui::InputFloat("Movementspeed", &movementspeed, 0.01, 0.1, "%.3f");
         ImGui::InputFloat("Object rotation", &rotAmount, 0.001, 0.01, "%.3f");
@@ -259,7 +241,6 @@ int main(void) {
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    VAO.destroy();
     glfwTerminate();
     return 0;
 }

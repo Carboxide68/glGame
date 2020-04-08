@@ -25,10 +25,9 @@ public:
     void addVertices(std::vector<glm::vec3> vertices);
 
     void createTriangle(std::array<uint, 3> indices);
+    void createTriangle(std::array<uint, 3> indices, std::array<glm::vec3, 3> normal);
 
-    void createTriangle(std::array<uint, 3> indices, glm::vec3 normal);
-
-    void createTriangles(std::vector<std::array<uint, 3>> triangles, std::vector<glm::vec3> normals);
+    void createTriangles(std::vector<std::array<uint, 3>> triangles, std::vector<std::array<glm::vec3, 3>> normals);
 
     void createInstance(glm::mat4 modelMatrix);
 
