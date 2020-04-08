@@ -26,6 +26,10 @@ void Mesh::addVertices(std::vector<glm::vec3> vertices) {
 //     }
 // }
 
+void Mesh::createTriangle(std::array<uint, 3> indices) {
+    
+}
+
 void Mesh::createTriangle(std::array<uint, 3> indices, glm::vec3 normal) {
 
     
@@ -62,21 +66,29 @@ void Mesh::createTriangles(std::vector<std::array<uint, 3>> triangles, std::vect
 
 void Mesh::loadMesh() { //IMPORTANT
     
+    for (auto i = m_Surfaces.begin(); i != m_Surfaces.end(); i++) {
+        (*i).updateIndices(m_Vertices);
+    }
+
     ushort indexRaw[m_Surfaces.size() * 3];
     float vertexRaw[m_Vertices.size() * 3];
     uint indexSize = sizeof(uint) * 3 * m_Surfaces.size();
     uint vertexSize = sizeof(float) * 3 * m_Vertices.size();
     for (uint i = 0; i < m_Surfaces.size(); i++) {
-        indexRaw[i * 3] = m_Surfaces[i][0];
-        indexRaw[i * 3 + 1] = m_Surfaces[i][1];
-        indexRaw[i * 3 + 2] = m_Surfaces[i][2];
+        ErrWithData<std::array<uint, 3>> indices = m_Surfaces[i].getIndices();
+        if (indices.error == 1) {
+            indexRaw[i * 3] = indices.DATA[0];
+            indexRaw[i * 3 + 1] = indices.DATA[1];
+            indexRaw[i * 3 + 2] = indices.DATA[2];
+        }
     }
 
     for (uint i = 0; i < m_Vertices.size(); i++) {
-        vertexRaw[i * 3] = m_Vertices[i][0];
-        vertexRaw[i * 3 + 1] = m_Vertices[i][1];
-        vertexRaw[i * 3 + 2] = m_Vertices[i][2];
+        vertexRaw[i * 3] = m_Vertices[i].pos[0];
+        vertexRaw[i * 3 + 1] = m_Vertices[i].pos[1];
+        vertexRaw[i * 3 + 2] = m_Vertices[i].pos[2];
     }
+
     m_VAO.bufferData(vertexSize, static_cast<void*>(vertexRaw));
     m_VAO.bufferIndices(indexSize, static_cast<void*>(indexRaw));
 
