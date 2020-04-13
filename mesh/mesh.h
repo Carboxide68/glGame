@@ -21,16 +21,15 @@ public:
     Mesh();
 
     void addVertex(glm::vec3 vertex);
-
     void addVertices(std::vector<glm::vec3> vertices);
 
     void createTriangle(std::array<uint, 3> indices);
     void createTriangle(std::array<uint, 3> indices, std::array<glm::vec3, 3> normal);
-
-    void createTriangles(std::vector<std::array<uint, 3>> triangles, std::vector<std::array<glm::vec3, 3>> normals);
+    void createTriangles(std::vector<std::array<uint, 3>> triangles);
 
     void createInstance(glm::mat4 modelMatrix);
 
+    void parseFile(std::string file);
     void loadMesh();
 
     void draw(const Camera &camera);
@@ -41,9 +40,8 @@ public:
     void temp_rotateY(float angle);
     void temp_rotateZ(float angle);
     void temp_resetModel();
-    
-    void parseFile(std::string file);
 
+    bool meshLoaded;
     Shader meshShader;
 
 private:
@@ -71,10 +69,9 @@ private:
 
     // void setupTexture();
 
-    bool m_MeshLoaded;
     float temp_scalev = 1.0f;
 
     void parseVertex(std::string line);
-    void parseFace(std::string line);
+    void parseFace(std::string line, std::vector<std::array<uint, 3>> &triangles);
 
 };

@@ -51,7 +51,6 @@ int main(void) {
     glfwMakeContextCurrent(window);
 
     /* Misc settings */
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     /* Setting callbacks */
     glfwSetKeyCallback(window, key_callback);
@@ -68,81 +67,8 @@ int main(void) {
 
     /* GL settings */
     GLCall(glEnable(GL_DEPTH_TEST));
+    // GLCall(glDisable(GL_DEPTH_TEST));
     GLCall(glCullFace(GL_FRONT_AND_BACK));
-
-    /* Vertices for a cube */
-    // float vertices[] = {
-
-    //     // Coordinates        //Normals
-    //     -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-    //      0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
-    //      0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
-    //      0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
-    //     -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
-    //     -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
-
-    //     -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-    //      0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-    //      0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-    //      0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-    //     -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-    //     -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-
-    //     -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-    //     -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    //     -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    //     -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    //     -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-    //     -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-
-    //      0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-    //      0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-    //      0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-    //      0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-    //      0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-    //      0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-
-    //     -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-    //      0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-    //      0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-    //      0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-    //     -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-    //     -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-
-    //     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-    //      0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-    //      0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-    //      0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-    //     -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-    //     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-    // };
-
-    // std::vector<glm::vec3> verts = {
-    //     glm::vec3(-0.5f, -0.5f, 0.5f),
-    //     glm::vec3(0.5f, -0.5f, 0.5f),
-    //     glm::vec3(0.5f, 0.5f, 0.5f),
-    //     glm::vec3(-0.5f, 0.5f, 0.5f),
-    //     glm::vec3(-0.5f, -0.5f, -0.5f),
-    //     glm::vec3(0.5f, -0.5f, -0.5f),
-    //     glm::vec3(0.5f, 0.5f, -0.5f),
-    //     glm::vec3(-0.5f, 0.5f, -0.5f)
-    // };
-
-    // std::vector<std::array<ushort, 3>> triangles = {
-    //     {0, 2, 1},
-    //     {0, 2, 3},
-    //     {3, 4, 0},
-    //     {3, 4, 7},
-    //     {4, 1, 0},
-    //     {4, 1, 5},
-    //     {5, 7, 6},
-    //     {5, 7, 4},
-    //     {2, 5, 6},
-    //     {2, 5, 1},
-    //     {7, 2, 6},
-    //     {7, 2, 3},
-    // };
-
 
     Mesh newObject;
     newObject.parseFile("models/Apartment.obj");
@@ -151,7 +77,7 @@ int main(void) {
     newObject.temp_setPosition(glm::vec3(5.0f, 5.0f, 5.0f));
     newObject.temp_scale(0.01f);
 
-    Shader myShader = Shader("shader/standard.vertexShader", "shader/standard.fragmentShader");
+    newObject.meshShader = Shader("shader/meshShader.vertexShader", "shader/meshShader.fragmentShader");
     player = Camera(glm::vec3(-3.0f, -3.0f, -3.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     player.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
 
@@ -177,6 +103,7 @@ int main(void) {
     float rotAmount = 0.00f;
     glm::vec3 lightPos = glm::vec3(5.0f, 8.0f, 5.0f);
 
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
 
@@ -202,14 +129,12 @@ int main(void) {
 
         newObject.meshShader.use();
         newObject.meshShader.setUniform("playerPos", player.getPosition());
-        newObject.meshShader.setUniform("objColor", glm::vec3(0.6f, 0.30196078431f, 0.0431372549f));
+        newObject.meshShader.setUniform("objColor", glm::vec3(0.673f, 0.2f, 0.802));
         newObject.meshShader.setUniform("light.color", glm::vec3(0.7f));
         newObject.meshShader.setUniform("light.ambient", glm::vec3(0.1f));
         newObject.meshShader.setUniform("light.position", lightPos);
-        newObject.meshShader.setUniform("shininess", 32.0f);
+        newObject.meshShader.setUniform("shininess", 64.0f);
         newObject.draw(player);
-
-        // newObject.temp_resetModel();
 
         glm::vec3 looking = player.getLookingDir();
         glm::vec3 position = player.getPosition();

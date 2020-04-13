@@ -1,4 +1,5 @@
 #pragma once
+#include <cstring>
 #include <signal.h>
 #include <vector>
 #include <array>

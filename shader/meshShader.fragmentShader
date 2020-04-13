@@ -1,9 +1,9 @@
 #version 330 core
 
+out vec4 color;
+
 in vec3 FragPos;
 in vec3 Normal;
-
-out vec4 color;
 
 struct Light {
 
@@ -32,10 +32,12 @@ void main() {
 
     // specular
     vec3 viewDir = normalize(playerPos - FragPos);
-    vec3 reflectDir = reflect(-lightDir, norm);  
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+    vec3 halfwayDir = normalize(lightDir + viewDir);  
+    float spec = pow(max(dot(norm, halfwayDir), 0.0), shininess);
     vec3 specular = specularStrength * spec * light.color;
+
     vec3 result = ambient + specular + diffuse;
 
     color = vec4(result * objColor, 1.0);
+    // color = vec4(norm, 1.0);
 }

@@ -4,7 +4,7 @@ Mesh::Mesh() : meshShader("shader/meshShader.vertexShader", "shader/meshShader.f
 
     m_ModelMatrix = glm::mat4(1);
     m_rGen.seed(floor(glfwGetTime() * 100000));
-    m_MeshLoaded = false;
+    meshLoaded = false;
 
 }
 
@@ -16,7 +16,7 @@ void Mesh::addVertex(glm::vec3 vertex) {
 
 void Mesh::addVertices(std::vector<glm::vec3> vertices) {
     for (auto i = vertices.begin(); i != vertices.end(); i++) {
-        m_Vertices.push_back({m_rGen(), *i});
+        addVertex(*i);
     }
 }
 
@@ -31,16 +31,13 @@ void Mesh::createTriangle(std::array<uint, 3> indices) {
 }
 
 void Mesh::createTriangle(std::array<uint, 3> indices, std::array<glm::vec3, 3> normal) {
-    m_Surfaces.push_back(Triangle({m_Vertices[indices[0]].ID, m_Vertices[indices[1]].ID, m_Vertices[indices[2]].ID}, normal));
+    m_Surfaces.push_back(Triangle({&m_Vertices[indices[0]], &m_Vertices[indices[1]], &m_Vertices[indices[2]]}, normal));
 }
 
-void Mesh::createTriangles(std::vector<std::array<uint, 3>> triangles, std::vector<std::array<glm::vec3, 3>> normals) {
+void Mesh::createTriangles(std::vector<std::array<uint, 3>> triangles) {
 
-    if (normals.size() < triangles.size())
-        return;
-
-    for (uint i = 0; i < triangles.size(); i++) {
-        createTriangle(triangles[i], {normals[i][0], normals[i][1], normals[i][2]});
+    for (auto i = triangles.begin(); i != triangles.end(); i++) {
+        createTriangle(*i, {glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f)});
     }
 }
 
@@ -62,20 +59,23 @@ void Mesh::loadMesh() {
     SurfaceGeometry geometry[m_Surfaces.size()];
 
     for (uint i = 0; i < m_Surfaces.size(); i++) {
-        m_Surfaces[i].generateNormal(m_Vertices);
-        geometry[i] = m_Surfaces[i].assembleGeometry(m_Vertices);
+        m_Surfaces[i].updateNodes(m_Vertices);
+        m_Surfaces[i].generateNormal();
+        geometry[i] = m_Surfaces[i].assembleGeometry();
     }
+
+    printf("Vertex count: %d\n", m_Vertices.size());
 
     m_VAO.bufferData(sizeof(geometry), (void*)geometry);
 
     m_VAO.addAttrib(GL_FLOAT, 3);
     m_VAO.addAttrib(GL_FLOAT, 3);
 
-    m_MeshLoaded = true;
+    meshLoaded = true;
 }
 
 void Mesh::draw(const Camera &camera) {
-    if (m_MeshLoaded) {
+    if (meshLoaded) {
         glm::mat4 assembledMatrix = camera.getPerspectiveMatrix() * camera.getViewMatrix() * m_ModelMatrix;
         meshShader.use();
         meshShader.setUniform("assembledMatrix", assembledMatrix);
@@ -138,6 +138,7 @@ void Mesh::parseFile(std::string file) {
 
     std::string myFile = loadFile(file);
 
+    std::vector<std::array<uint, 3>> triangles;
     std::vector<std::string> lines;
 
     std::string temp;
@@ -157,27 +158,45 @@ void Mesh::parseFile(std::string file) {
                 parseVertex(line);
             }
         } else if (line[0] == 'f') {
-            parseFace(line);
-        }   
+            parseFace(line, triangles);
+        }
     }
+
+    createTriangles(triangles);
 }
 
 void Mesh::parseVertex(std::string line) {
     float vertices[3];
     sscanf(line.c_str(), "%*s %f %f %f %*s", &vertices[0], &vertices[1], &vertices[2]);
+    if(abs(vertices[0]) > 1000 || abs(vertices[1]) > 1000 || abs(vertices[2]) > 1000) {
+        printf("%s\n", line.c_str());
+    }
     addVertex(glm::vec3(vertices[0], vertices[1], vertices[2]));
 }
 
-void Mesh::parseFace(std::string line) {
+void Mesh::parseFace(std::string line, std::vector<std::array<uint, 3>> &triangles) {
     ushort indices[7];
 
-    uint count = sscanf(line.c_str(), "%*s %hu %*s %hu %*s %hu %*s %hu %*s %hu %*s %hu %*s %hu %*s", &indices[0], &indices[1], &indices[2], &indices[3], &indices[4], &indices[5], &indices[6]);
-    // printf("%hu %hu %hu\n", indices[0], indices[1], indices[2]);
+    unsigned int count;
+
+    if (strchr(line.c_str(), '/')) {
+        count = sscanf(line.c_str(), "%*s %u %*s %u %*s %u %*s %u %*s %u %*s %u %*s %u %*s", &indices[0], &indices[1], &indices[2], &indices[3], &indices[4], &indices[5], &indices[6]);
+    }
+    else {
+        count = sscanf(line.c_str(), "%*s %u %u %u %u %u %u %u %*s", &indices[0], &indices[1], &indices[2], &indices[3], &indices[4], &indices[5], &indices[6]);
+        // printf("Count: %d; Line: %s\n", count, line.c_str());
+    }    // printf("%hu %hu %hu\n", indices[0], indices[1], indices[2]);
     if (count == 3) {
-        createTriangle({indices[0] - 1, indices[1] - 1, indices[2] - 1});
+        triangles.push_back({indices[0] - 1, indices[1] - 1, indices[2] - 1});
+        // createTriangle({indices[0] - 1, indices[1] - 1, indices[2] - 1});
     } else if (count == 4) {
-        createTriangle({indices[0] - 1, indices[1] - 1, indices[2] - 1});
-        createTriangle({indices[3] - 1, indices[0] - 1, indices[2] - 1});
+        triangles.push_back({indices[0] - 1, indices[1] - 1, indices[2] - 1});
+        triangles.push_back({indices[3] - 1, indices[0] - 1, indices[2] - 1});
+        // createTriangle({indices[0] - 1, indices[1] - 1, indices[2] - 1});
+        // createTriangle({indices[3] - 1, indices[0] - 1, indices[2] - 1});
+    }
+    else {
+        printf("Number of indices is: %d; String is %s\n", count, line.c_str());
     }
 }
 
