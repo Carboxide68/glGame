@@ -49,7 +49,7 @@ std::string loadFile(std::string fileSource) {
     //Loading file
     std::ifstream file(fileSource);
 
-    std::string charFile;
+    std::string charFile = "";
 
     //If loading was successfull, we read the file and put it into a stringstream which in turn is converted to the target type
     if (file) {

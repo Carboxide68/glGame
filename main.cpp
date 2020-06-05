@@ -4,6 +4,7 @@
 #include "shader/shader.h"
 #include "glObjects/vao.h"
 #include "glObjects/vbo.h"
+#include "misc/skybox.h"
 #include "imgui/imgui.h"
 #include "imgui/examples/imgui_impl_glfw.h"
 #include "imgui/examples/imgui_impl_opengl3.h"
@@ -70,6 +71,15 @@ int main(void) {
     // GLCall(glDisable(GL_DEPTH_TEST));
     GLCall(glCullFace(GL_FRONT_AND_BACK));
 
+    Skybox mySky = Skybox({
+        "misc/skybox/right.jpg",
+        "misc/skybox/left.jpg",
+        "misc/skybox/top.jpg",
+        "misc/skybox/bottom.jpg",
+        "misc/skybox/front.jpg",
+        "misc/skybox/back.jpg"
+    });
+
     Mesh newObject;
     newObject.parseFile("models/Apartment.obj");
 
@@ -135,6 +145,8 @@ int main(void) {
         newObject.meshShader.setUniform("light.position", lightPos);
         newObject.meshShader.setUniform("shininess", 64.0f);
         newObject.draw(player);
+
+        mySky.draw(player);
 
         glm::vec3 looking = player.getLookingDir();
         glm::vec3 position = player.getPosition();

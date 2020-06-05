@@ -8,7 +8,7 @@ buildDir = build/
 
 additionalFiles = common/common.cpp camera/camera.cpp glObjects/vao.cpp glObjects/vbo.cpp glObjects/ibo.cpp imgui/imgui.cpp 
 additionalFiles += imgui/imgui_draw.cpp imgui/imgui_demo.cpp imgui/imgui_widgets.cpp imgui/examples/imgui_impl_opengl3.cpp 
-additionalFiles += imgui/examples/imgui_impl_glfw.cpp mesh/mesh.cpp mesh/triangle.cpp
+additionalFiles += imgui/examples/imgui_impl_glfw.cpp mesh/mesh.cpp mesh/triangle.cpp misc/skybox.cpp
 
 objFiles = ${notdir ${additionalFiles:.cpp=.o}}
 
@@ -39,6 +39,8 @@ debug: main.cpp ${objFiles}
 %.o: mesh/%.cpp
 	g++ ${flags} -c $< -o $@
 
+%.o: misc/%.cpp
+	g++ ${flags} -c $< -o $@
 
 clean:
 	rm -f *.o main debug || true
