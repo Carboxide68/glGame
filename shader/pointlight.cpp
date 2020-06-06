@@ -50,7 +50,7 @@ void PointLight::m_GenerateFBO() {
     GLCall(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
-void PointLight::changeResolution(const uint shadow_width, const uint shadow_height) {
+void PointLight::setResolution(const uint shadow_width, const uint shadow_height) {
     m_SHADOW_HEIGHT = shadow_height;
     m_SHADOW_WIDTH = shadow_width;
 }

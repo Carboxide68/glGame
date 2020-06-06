@@ -26,7 +26,7 @@ double lastYPos = 0;
 float movementspeed = 0.3f;
 float pi = 3.1415926535897932384626433832;
 
-bool state = true;
+bool state = false;
 
 Camera player;
 glm::vec3 movement;
@@ -90,16 +90,16 @@ int main(void) {
     });
 
     Mesh newObject;
-    newObject.parseFile("models/Corridor.obj");
+        newObject.parseFile("models/Apartment.obj");
 
     newObject.loadMesh();
     newObject.temp_setPosition(glm::vec3(5.0f, 5.0f, 5.0f));
-    newObject.temp_scale(.05f);
+    newObject.temp_scale(.01f);
 
     player = Camera(glm::vec3(-3.0f, -3.0f, -3.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     player.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
 
-    myLight.changeResolution(2048, 2048);
+    myLight.setResolution(2048, 2048);
 
     myLight.updateShadowmap(newObject);
 
@@ -157,7 +157,6 @@ int main(void) {
             myLight.updateShadowmap(newObject);
         }
 
-
         newObject.meshShader.use();
         newObject.meshShader.setUniform("viewPos", player.getPosition());
         newObject.meshShader.setUniform("objColor", glm::vec3(0.673f, 0.2f, 0.802));
@@ -168,6 +167,7 @@ int main(void) {
         newObject.meshShader.setUniform("diskRadius", diskRadius);
         myLight.lightUniform(&newObject.meshShader);
         newObject.draw(player);
+
         GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, 0));
         
         mySky.draw(player);
