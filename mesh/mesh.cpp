@@ -1,6 +1,6 @@
 #include "mesh.h"
 
-Mesh::Mesh() : meshShader("shader/meshShader.vertexShader", "shader/meshShader.fragmentShader") {
+Mesh::Mesh() : meshShader("shader/meshShader.vert", "shader/meshShader.frag") {
 
     m_ModelMatrix = glm::mat4(1);
     m_rGen.seed(floor(glfwGetTime() * 100000));
@@ -82,6 +82,14 @@ void Mesh::draw(const Camera &camera) {
         meshShader.setUniform("model", m_ModelMatrix);
         m_VAO.drawArrays(m_Surfaces.size() * 3);
     }
+}
+
+void Mesh::setShader(Shader shader) {
+    meshShader = shader;
+}
+
+void Mesh::resetShader() {
+    meshShader = Shader("shader/meshShader.vert", "", "shader/meshShader.frag");
 }
 
 void Mesh::temp_setPosition(glm::vec3 pos) {

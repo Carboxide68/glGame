@@ -7,17 +7,24 @@ class Shader {
 
 public:
 
-	Shader(std::string vertexShaderSource, std::string fragmentShaderSource) {
+	Shader(std::string vSS, std::string fSS) : Shader(vSS, "", fSS){}
+
+	Shader(std::string vSS, std::string gSS, std::string fSS) {
 
 		//Creating program
-		GLCall(program = glCreateProgram());
-
+		program = glCreateProgram();
+		GLuint vertexShader, geometryShader, fragmentShader;
 		//Creating shaders
-		GLCall(GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER));
-		GLCall(GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER));
+		GLCall(vertexShader = glCreateShader(GL_VERTEX_SHADER));
+		
+		if (gSS != "") {
+			GLCall(geometryShader = glCreateShader(GL_GEOMETRY_SHADER));
+		}
+
+		GLCall(fragmentShader = glCreateShader(GL_FRAGMENT_SHADER));
 
 		//Reading VertexShader file and storing it in a stringstream
-		std::string vertexShaderString = loadFile(vertexShaderSource);
+		std::string vertexShaderString = loadFile(vSS);
 
 		const GLchar *v[1] = {vertexShaderString.data()};
 
@@ -35,14 +42,34 @@ public:
 			std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
 		}
 
+		if (gSS != "") {
+			std::string geoemtryShaderString = loadFile(gSS);
+
+			const GLchar *f[1] = {geoemtryShaderString.data()};
+
+			//Attaching the source and compiling the shader
+			GLCall(glShaderSource(geometryShader, 1, f, NULL));
+			GLCall(glCompileShader(geometryShader));
+
+			memset(infoLog, 0, 512);
+			//Compile error checking
+			GLCall(glGetShaderiv(geometryShader, GL_COMPILE_STATUS, &success));
+			if (!success) {
+				GLCall(glGetShaderInfoLog(geometryShader, 512, NULL, infoLog));
+				std::cout << "ERROR::SHADER::GEOMETRY::COMPILATION_FAILED\n" << infoLog << std::endl;
+			}
+		}
+
 		//Reading FragmentShader file and storing it in a stringstream
-		std::string fragmentShaderString = loadFile(fragmentShaderSource);
+		std::string fragmentShaderString = loadFile(fSS);
 
 		const GLchar *f[1] = {fragmentShaderString.data()};
 
 		//Attaching the source and compiling the shader
 		GLCall(glShaderSource(fragmentShader, 1, f, NULL));
 		GLCall(glCompileShader(fragmentShader));
+
+		memset(infoLog, 0, 512);
 
 		//Compile error checking
 		GLCall(glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success));
@@ -53,20 +80,33 @@ public:
 
 		//Attaching and linking program
 		GLCall(glAttachShader(program, vertexShader));
+		if (gSS != "") {
+			GLCall(glAttachShader(program, geometryShader));
+		}
 		GLCall(glAttachShader(program, fragmentShader));
 		GLCall(glLinkProgram(program));
 
+		memset(infoLog, 0, 512);
+
 		//Linking error checking
 		GLCall(glGetProgramiv(program, GL_LINK_STATUS, &success));
-		if(!success) {
+		if (!success) {
 			GLCall(glGetProgramInfoLog(program, 512, NULL, infoLog));
 			std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
 		}
 
 		GLCall(glDetachShader(program, vertexShader));
+		if (gSS != "") {
+			GLCall(glDetachShader(program, geometryShader));
+		}
+
 		GLCall(glDetachShader(program, fragmentShader));
 
 		GLCall(glDeleteShader(vertexShader));
+		if (gSS != "") {
+			GLCall(glDeleteShader(geometryShader));
+		}
+
 		GLCall(glDeleteShader(fragmentShader));
 	}
 
@@ -80,7 +120,7 @@ public:
 	}
 
 	void setUniform(GLuint ID, float value) const {
-		GLCall(glUniform1f(ID, value))
+		GLCall(glUniform1f(ID, value));
 	}
 
 	void setUniform(std::string name, float value) const {

@@ -1,8 +1,6 @@
 #include "camera.h"
 
-Camera::Camera() {
-    Camera(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
-}
+Camera::Camera() : Camera(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1)) {}
 
 Camera::Camera(glm::vec3 position, glm::vec3 lookingDir) {
 
@@ -85,8 +83,12 @@ glm::mat4 Camera::getPerspectiveMatrix() const {
 }
 
 void Camera::updatePerspectiveMatrix(float FOV, float aspect) {
+    updatePerspectiveMatrix(FOV, aspect, 0.1f, 100.0f);
+}
+
+void Camera::updatePerspectiveMatrix(float FOV, float aspect, float near, float far) {
     m_FOV = FOV;
-    m_PerspectiveMatrix = glm::perspective(m_FOV, aspect, 0.1f, 100.0f);
+    m_PerspectiveMatrix = glm::perspective(m_FOV, aspect, near, far);
 }
 
 glm::vec3 Camera::getPosition() const {

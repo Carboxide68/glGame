@@ -61,13 +61,12 @@ void Skybox::draw(Camera &cam) {
     m_SkyboxShader.use();
     m_SkyboxShader.setUniform("projection", cam.getPerspectiveMatrix());
     m_SkyboxShader.setUniform("view", glm::mat4(glm::mat3(cam.getViewMatrix())));
-    m_VAO.use();
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
+    m_VAO.use();
     m_VAO.drawArrays(36);
     m_VAO.disuse();
     glDepthMask(GL_TRUE);
     glDepthFunc(GL_LESS);
-
 }
 
 unsigned int Skybox::loadCubemap(std::array<std::string, 6> faces) {

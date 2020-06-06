@@ -15,7 +15,6 @@
 */
 
 class Mesh {
-
 public:
 
     Mesh();
@@ -33,6 +32,9 @@ public:
     void loadMesh();
 
     void draw(const Camera &camera);
+
+    void setShader(Shader shader);
+    void resetShader();
 
     void temp_setPosition(glm::vec3 positions);
     void temp_scale(float scale);

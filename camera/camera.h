@@ -22,6 +22,7 @@ public:
     void move(glm::vec3 mag);
 
     void updatePerspectiveMatrix(float FOV, float aspect);
+    void updatePerspectiveMatrix(float FOV, float aspect, float near, float far);
 
     void lookAt(glm::vec3 position);
 
