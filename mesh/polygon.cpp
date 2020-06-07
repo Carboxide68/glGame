@@ -6,7 +6,7 @@ Polygon::Polygon(std::vector<glm::vec3&> pos, std::vector<glm::vec2&> texCoords,
 
     m_Pos = pos;
     m_TexCoords = texCoords;
-    m_Normal = normal;
+    m_Normals[0] = normal;
 
 }
 
@@ -14,7 +14,7 @@ void Polygon::generateNormal() {
     if (!CheckForErrors) {
         return;
     }
-    m_Normal = glm::normalize(glm::cross(m_Pos[1] - m_Pos[0], m_Pos[2] - m_Pos[0]));
+    m_Normals[0] = glm::normalize(glm::cross(m_Pos[1] - m_Pos[0], m_Pos[2] - m_Pos[0]));
 }
 
 bool Polygon::CheckForErrors() const {
@@ -28,4 +28,35 @@ bool Polygon::CheckForErrors() const {
         printf("Texture Coordinates are don't match specifications!");
         return false;
     }
+}
+
+uint Polygon::getTriangleCount() {
+
+    return m_Pos.size() - 2;
+
+}
+
+std::vector<Triangle> Polygon::assembleTriangleMesh() {
+
+    std::vector<Triangle> triangles;
+
+    if (!CheckForErrors()) {
+        return {};
+    }
+
+    float usingTex = (m_TexCoords.size() < 1) ? 0.0f : 1.0f;
+    for (int i = 2; i < m_Pos.size(); i++) {
+        triangles.push_back({
+            m_Pos[0],
+            m_TexCoords[0 * usingTex],
+            m_Normals[0],
+            m_Pos[i - 1],
+            m_TexCoords[(i - 1) * usingTex],
+            m_Normals[0],
+            m_Pos[i],
+            m_TexCoords[i * usingTex],
+            m_Normals[0]
+        });
+    }
+    return triangles;
 }
