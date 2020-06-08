@@ -50,5 +50,5 @@ Structure:
         Keeps care of all the buffers
         The interface to the user
 
-Model can ask Group for indices. When this is done, indices will ask for buffer location of different polygons. It will then return
-the correct indices. Model can ask Group to bind eventual textures and bind eventual uniforms. It can also ask group of how many texture slots it needs, for proper drawcall splitting in case of a lack of texture slots. It is assumed at this time that a shader is already assigned, and the Group won't use one itself.
+Model can ask Group for indices. When this is done, Group will ask for buffer location of different polygons. It will then return
+the correct indices. Model can ask Group to bind eventual textures and bind eventual uniforms. It is assumed that the amount of bindable textures is already accounted for. One can ask Group for how many textures it will bind when used. It is assumed at this time that a shader is already assigned, and the Group won't use one itself.

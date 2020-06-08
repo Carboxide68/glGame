@@ -1,6 +1,10 @@
 #pragma once
 
 #include "../common/common.h"
+#include "group.h"
+#include "polygon.h"
+#include "model.h"
+#include "mesh.h"
 
 struct Triangle {
     glm::vec3 pos1;
@@ -14,10 +18,12 @@ struct Triangle {
     glm::vec3 normal3;
 };
 
-union modelID {
+union ModelID {
     struct {
         uint mesh;
         uint polygon;
     };
     ulong ID;
 };
+
+size_t TRIANGLE_SIZE = sizeof(Triangle);

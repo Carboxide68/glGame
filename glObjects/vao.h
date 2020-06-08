@@ -29,10 +29,10 @@ public:
 
     inline void bufferIndices(unsigned int size, void *indices) const {use(); IBO.bufferData(size, indices); disuse();}
 
-    inline void drawArrays(unsigned int count, unsigned int offset) const {use(); GLCall(glDrawArrays(GL_TRIANGLES, offset, count)); disuse();}
-    inline void drawArrays(unsigned int count) const {use(); GLCall(glDrawArrays(GL_TRIANGLES, 0, count)); disuse();}
+    inline void drawArrays(unsigned int count, unsigned int offset) const {use(); GLCall(glDrawArrays(GL_TRIANGLES, offset, count)); G_triangles += count; disuse();}
+    inline void drawArrays(unsigned int count) const {use(); GLCall(glDrawArrays(GL_TRIANGLES, 0, count)); G_triangles += count; disuse();}
 
-    inline void drawIndices(unsigned int count) const {use(); GLCall(glDrawElements(GL_TRIANGLES, count, m_IndexType, NULL)); disuse();}
+    inline void drawIndices(unsigned int count) const {use(); GLCall(glDrawElements(GL_TRIANGLES, count, m_IndexType, NULL)); G_triangles += count; disuse();}
 
     void destroy();
 

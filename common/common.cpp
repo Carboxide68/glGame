@@ -62,3 +62,5 @@ std::string loadFile(std::string fileSource) {
     }
     return charFile;
 }
+
+uint G_triangles;

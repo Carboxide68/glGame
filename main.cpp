@@ -132,6 +132,8 @@ int main(void) {
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
 
+        G_triangles = 0;
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -175,6 +177,7 @@ int main(void) {
         glm::vec3 looking = player.getLookingDir();
         glm::vec3 position = player.getPosition();
         ImGui::Begin("main");
+        ImGui::Text("Triangles: %d", G_triangles);
         ImGui::Text("FPS: %f", 1/deltaTime);
         ImGui::Text("Frame time: %f", frameTime);
         ImGui::Text("Looking direction: %f, %f, %f", looking.x, looking.y, looking.z);

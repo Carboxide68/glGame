@@ -38,3 +38,5 @@ struct ErrWithData {
     T data;
     int error;
 };
+
+extern uint G_triangles;

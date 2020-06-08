@@ -1,8 +1,6 @@
 #pragma once
 
 #include "../common/common.h"
-#include "polygon.h"
-#include "model.h"
 
 struct Material {
 
@@ -35,7 +33,7 @@ public:
 
 private:
 
-    void EvalutateMaterialProperties();
+    void EvaluateMaterialProperties();
 
     void UpdateIndices();
 

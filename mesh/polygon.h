@@ -26,6 +26,6 @@ private:
 
     std::vector<glm::vec3> m_Normals;       //Only using first position of normal for now, will make some changes in future
 
-    modelID m_ID;
+    ModelID m_ID;
 
 };
