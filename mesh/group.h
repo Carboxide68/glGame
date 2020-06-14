@@ -1,35 +1,32 @@
 #pragma once
 
 #include "../common/common.h"
+#include "modelCommon.h"
+#include "polygon.h"
 
-struct Material {
-
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-    glm::vec3 specStrength;
-    float opacity;
-    std::string ambientT;
-    std::string diffuseT;
-    std::string specularT;
-
-};
+class Model;
 
 class Group {
 public:
 
-    Group(Model parent);
-    Group(Model parent, std::vector<Polygon> polygons);
+    Group(Model &parent);
+    Group(Model &parent, std::vector<Polygon> polygons);
 
-    std::vector<GLuint> getIndices();
+    inline void setName(const std::string name) {m_MaterialName = name;}
+    inline std::string getName() const {return m_MaterialName;}
 
-    inline void addPolygon(Polygon polygon) {m_Polygons.push_back(polygon);};
-    inline void addPolygons(const std::vector<Polygon> &polygons) {m_Polygons.insert(m_Polygons.end(), polygons.begin(), polygons.end());}
+    std::vector<uint> getIndices();
 
-    void bindMaterial(const uint bindNumber);
-    void createTextures();
+    inline void addPolygon(Polygon polygon) {m_Polygons.push_back(&polygon);};
+    inline void addPolygon(Polygon* polygon) {m_Polygons.push_back(polygon);};
+    void addPolygons(std::vector<Polygon> &polygons);
+    void addPolygons(std::vector<Polygon*> &polygons);
+
+    void bindMaterial();
+    void generateTextures();
 
     uint textureCount() const;
+    inline uint indexCount() const {return m_Indices.size();};
 
 private:
 
@@ -39,12 +36,11 @@ private:
 
     Model &m_ParentModel;
 
-    std::vector<Polygon&> m_Polygons;
-    std::vector<uint> m_Indices(); //Internally stored indices for omptimized returning
+    std::vector<Polygon*> m_Polygons;
+    std::vector<uint> m_Indices; //Internally stored indices for omptimized assembling
 
+    std::string m_MaterialName;
     Material m_Material;
-
-    std::array<uint, 8> materialProperties;
-
+    std::array<uint, 8> m_MaterialProperties;
     std::array<uint, 3> m_Textures;
 };
