@@ -101,15 +101,6 @@ bool Model::loadModel(std::string path) {
         return false;
     }
 
-    
-
-    for (int i = 0; i < meshes.size(); i++) {
-        printf("Name: %s\nOffset: %d\n", meshes[i].name.c_str(), meshes[i].loc);
-    }
-    for (int i = 0; i < usingMaterial.size(); i++) {
-        printf("Name: %s\nOffset: %d\n", usingMaterial[i].name.c_str(), usingMaterial[i].loc);
-    }
-
     meshes.push_back({"placeholder", faces.size() - 1}); //Last element in faces
     usingMaterial.push_back({"placeholder", faces.size() - 1}); //Last element in faces
     for (int i = 0; i < meshes.size() - 1; i++) {
@@ -133,9 +124,6 @@ bool Model::loadModel(std::string path) {
         polygons.insert(polygons.end(), tempPolygons.begin(), tempPolygons.end());
         m_Meshes[i].setName(meshes[i].name);
         m_LastID.mesh += 1;
-        if (glm::mod(glm::floor(glm::sqrt(i)), 5.0) == 0) {
-            printf("We're on the %dth loop\n", i);
-        }
     }
     { //Change this for loading material libs.
     std::vector<std::string> names;
@@ -160,6 +148,7 @@ bool Model::loadModel(std::string path) {
         auto polygonList = std::vector<Polygon*>(start, end);
         groupMap[usingMaterial[i].name]->addPolygons(polygonList);
     }
+    return true;
 }
 
 void Model::draw() { //Assumes a shader is bound

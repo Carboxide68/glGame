@@ -14,18 +14,71 @@ struct Face { //Indices
     std::vector<uint> normal;
 };
 
-glm::vec3 readVertex(std::string line) { //v
+constexpr bool faceFilter[256] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //NULL
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //DLE
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //SPACE
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //0
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //@
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //P
+    0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, //`, a
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  //p
+};
+
+const bool normalFilter[256] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //NULL
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //DLE
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //SPACE
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //0
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //@
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //P
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, //`, a
+    0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0  //p
+};
+const bool vertexFilter[256] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //NULL
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //DLE
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //SPACE
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //0
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //@
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //P
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //`, a
+    0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0  //p
+};
+const bool texFilter[256] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //NULL
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //DLE
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //SPACE
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //0
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //@
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //P
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //`, a
+    0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0  //p
+};
+const bool ifSeperator[256] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, //NULL
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //DLE
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //SPACE
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //0
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //@
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //P
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //`, a
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  //p
+};
+
+glm::vec3 readVertex(const std::string line) { //v
+    const size_t lineSize = line.size();
     std::array<std::string, 3> stringVertex;
     glm::vec3 vertex;
     int i = 0;
-    for (; i < line.size(); i++) {
-        if (line[i] == ' ' || line[i] == 'v') continue;
+    for (; i < lineSize; i++) {
+        if (vertexFilter[line[i]]) continue;
         break;
     }
     for(int x = 0;x < 3;x++) {
         for (; line[i] == ' '; i++) continue;
-        for (;i < line.size(); i++) {
-            if (line[i] == ' ' || line[i] == '\n' || line[i] == '\r') break;
+        for (;i < lineSize; i++) {
+            if (ifSeperator[line[i]]) break;
             stringVertex[x].push_back(line[i]);
         }
     }
@@ -36,18 +89,19 @@ glm::vec3 readVertex(std::string line) { //v
 }
 
 //Currently only support 2D textures. Explore later
-glm::vec2 readTexCoord(std::string line) { //vt
+glm::vec2 readTexCoord(const std::string line) { //vt
+    const size_t lineSize = line.size();
     std::array<std::string, 2> stringTexCoords;
     glm::vec2 texCoords;
     int i = 0;
-    for (; i < line.size(); i++) {
-        if (line[i] == ' ' || line[i] == 'v' || line[i] == 't') continue;
+    for (; i < lineSize; i++) {
+        if (texFilter[line[i]]) continue;
         break;
     }
     for(int x = 0;x < 2;x++) {
         for (; line[i] == ' '; i++) continue;
-        for (;i < line.size(); i++) {
-            if (line[i] == ' ' || line[i] == '\n' || line[i] == '\r') break;
+        for (;i < lineSize; i++) {
+            if (ifSeperator[line[i]]) break;
             stringTexCoords[x].push_back(line[i]);
         }
     }
@@ -56,18 +110,19 @@ glm::vec2 readTexCoord(std::string line) { //vt
     return texCoords;
 }
 
-glm::vec3 readNormal(std::string line) { //vn
+glm::vec3 readNormal(const std::string line) { //vn
+    const size_t lineSize = line.size();
     std::array<std::string, 3> stringNormal;
     glm::vec3 normal;
     int i = 0;
-    for (; i < line.size(); i++) {
-        if (line[i] == ' ' || line[i] == '\n' || line[i] == '\r' || line[i] == 'v' || line[i] == 'n') continue;
+    for (; i < lineSize; i++) {
+        if (ifSeperator[line[i]] || faceFilter[line[i]]) continue;
         break;
     }
     for(int x = 0;x < 3;x++) {
         for (; line[i] == ' '; i++) continue;
-        for (;i < line.size(); i++) {
-            if (line[i] == ' ' || line[i] == '\n' || line[i] == '\r') break;
+        for (;i < lineSize; i++) {
+            if (ifSeperator[line[i]]) break;
             stringNormal[x].push_back(line[i]);
         }
     }
@@ -77,47 +132,46 @@ glm::vec3 readNormal(std::string line) { //vn
     return normal;
 }
 
-Face readFace(std::string line) { //f
+Face readFace(const std::string line) { //f
+    const size_t lineSize = line.size();
     Face myFace;
     std::vector<std::string> faceString;
     int i = 0;
-    for (; i < (line.size() - 1); i++) {
-        if (line[i] == ' ' || line[i] == 'f') continue;
-        break;
-    }
-    for(;i < (line.size() - 1);) {
+    for (; i < (lineSize - 1) && faceFilter[line[i]]; i++) {}
+    int x = 0;
+    for(;i < (lineSize - 1);) {
         for (;line[i] == ' '; i++) continue;
         faceString.push_back("");
-        for (;i < line.size(); i++) {
-            if (line[i] == ' ' || line[i] == '\n' || line[i] == '\r') break;
-            faceString.back().push_back(line[i]);
+        for (;i < lineSize; i++) {
+            if (ifSeperator[line[i]]) break;
+            faceString[x].push_back(line[i]);
         }
-    }
+        x++;
+    }   
+
     myFace.normal.resize(faceString.size());
     myFace.texCoord.resize(faceString.size());
     myFace.vertex.resize(faceString.size());
 
-    std::vector<uint> offsets;
-    offsets.resize(faceString.size());
-
     for (int x = 0; x < faceString.size(); x++) {
         std::string tempS = "0";
+        size_t faceSize = faceString[x].size();
         i = 0;
-        for (;i < faceString[x].size(); i++) {
+        for (;i < faceSize; i++) {
             if (faceString[x][i] == '/') break;
             tempS.push_back(faceString[x][i]);
         }
         myFace.vertex[x] = stoi(tempS);
         tempS = "0";
         i++;
-        for (;i < faceString[x].size(); i++) {
+        for (;i < faceSize; i++) {
             if (faceString[x][i] == '/') break;
             tempS.push_back(faceString[x][i]);
         }
         myFace.texCoord[x] = stoi(tempS);
         tempS = "0";
         i++;
-        for (;i < faceString[x].size(); i++) {
+        for (;i < faceSize; i++) {
             if (faceString[x][i] == '/') break;
             tempS.push_back(faceString[x][i]);
         }
@@ -126,55 +180,60 @@ Face readFace(std::string line) { //f
     return myFace;
 }
 
-std::string readMeshName(std::string line) { //g
+std::string readMeshName(const std::string line) { //g
+    const size_t lineSize = line.size();
     std::string name;
     int i = 0;
     bool passedg = false;
-    for (; i < line.size(); i++) {
-        if (line[i] == ' ') continue;
-        if (line[i] == 'g' && !passedg) { //Ignore the first g that comes up
+    for (; i < lineSize; i++) {
+        char l = line[i];
+        if (l == ' ') continue;
+        if (l == 'g' && !passedg) { //Ignore the first g that comes up
             passedg = true;
             continue;
         }
         break;
     }
-    for (;i < line.size(); i++) {
-        if (line[i] == ' ' || line[i] == '\n' || line[i] == '\r') break;
-        name.push_back(line[i]);
+    for (;i < lineSize; i++) {
+        char l = line[i];
+        if (ifSeperator[l]) break;
+        name.push_back(l);
     }
     return name;
 }
 
-bool readSmoothingGroup(std::string line) {
+bool readSmoothingGroup(const std::string line) {
     if (line.find("on") != std::string::npos) {
         return true;
     }
     return false;
 }
 
-std::string readMaterial(std::string line) {
+std::string readMaterial(const std::string line) {
+    const size_t lineSize = line.size();
     std::string name;
     int i = line.find("usemtl") + 6;
-    for (; i < line.size(); i++) {
+    for (; i < lineSize; i++) {
         if (line[i] == ' ') continue;
         break;
     }
-    for (;i < line.size(); i++) {
-        if (line[i] == ' ' || line[i] == '\n' || line[i] == '\r') break;
+    for (;i < lineSize; i++) {
+        if (ifSeperator[line[i]]) break;
         name.push_back(line[i]);
     }
     return name;
 }
 
-std::string readMateriallib(std::string line) {
+std::string readMateriallib(const std::string line) {
+    const size_t lineSize = line.size();
     std::string name;
     int i = line.find("mtllib") + 6;
-    for (; i < line.size(); i++) {
+    for (; i < lineSize; i++) {
         if (line[i] == ' ') continue;
         break;
     }
-    for (;i < line.size(); i++) {
-        if (line[i] == ' ' || line[i] == '\n' || line[i] == '\r') break;
+    for (;i < lineSize; i++) {
+        if (ifSeperator[line[i]]) break;
         name.push_back(line[i]);
     }
     return name;

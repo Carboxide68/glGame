@@ -24,11 +24,12 @@ std::vector<Polygon*> Mesh::createPolygons(std::vector<std::vector<uint>> positi
     auto polygonStart = m_Polygons.end();
     if (normals[0] == glm::vec3(0)) {
         for (int i = 0; i < positionIndices.size(); i++) {
+            const size_t positionIndexSize = positionIndices[i].size();
             std::vector<glm::vec3> tempPositions;
             std::vector<glm::vec2> tempTexCoords;
-            tempPositions.resize(positionIndices[i].size());
-            tempTexCoords.resize(positionIndices[i].size());
-            for (int x = 0; x < positionIndices[i].size(); x++) {
+            tempPositions.resize(positionIndexSize);
+            tempTexCoords.resize(positionIndexSize);
+            for (int x = 0; x < positionIndexSize; x++) {
                 tempPositions[x] = m_Positions[positionIndices[i][x]];
                 tempTexCoords[x] = m_TexCoords[texIndices[i * texMult][x * texMult]];
             }
@@ -36,11 +37,12 @@ std::vector<Polygon*> Mesh::createPolygons(std::vector<std::vector<uint>> positi
         }
     } else {
         for (int i = 0; i < positionIndices.size(); i++) {
+            const size_t positionIndexSize = positionIndices[i].size();
             std::vector<glm::vec3> tempPositions;
             std::vector<glm::vec2> tempTexCoords;
-            tempPositions.resize(positionIndices[i].size());
-            tempTexCoords.resize(positionIndices[i].size());
-            for (int x = 0; x < positionIndices[i].size(); x++) {
+            tempPositions.resize(positionIndexSize);
+            tempTexCoords.resize(positionIndexSize);
+            for (int x = 0; x < positionIndexSize; x++) {
                 tempPositions[x] = m_Positions[positionIndices[i][x]];
                 tempTexCoords[x] = m_TexCoords[texIndices[i * texMult][x * texMult]];
             }
@@ -69,9 +71,10 @@ std::vector<StandardVertex> Mesh::getStandardVertices() const {
 }
 
 void Mesh::UpdatePolygonMap() {
-    m_PolygonMap.reserve(m_Polygons.size() + 1);
+    const size_t polygonSize = m_Polygons.size();
+    m_PolygonMap.reserve(polygonSize + 1);
     m_PolygonMap[0] = 0; //First index will be zero, second will be after the first is done etc
-    for (int i = 0; i < m_Polygons.size(); i++) {
+    for (int i = 0; i < polygonSize; i++) {
         m_PolygonMap[i + 1] = m_Polygons[i].m_Pos.size() * STANDARD_VERTEX_BYTE_SIZE; //Change this to a per-model standard
     }
 }
