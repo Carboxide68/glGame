@@ -1,20 +1,52 @@
 #include "polygon.h"
 
-Polygon::Polygon(std::vector<glm::vec3> &pos, std::vector<glm::vec2> &texCoords) : Polygon(pos, texCoords, {0, 0, 0}){}
+Polygon::Polygon(ModelID id, std::vector<glm::vec3> &pos, std::vector<glm::vec2> &texCoords) : Polygon(id, pos, texCoords, {0, 0, 0}){}
 
-Polygon::Polygon(std::vector<glm::vec3> &pos, std::vector<glm::vec2> &texCoords, glm::vec3 normal) {
+Polygon::Polygon(ModelID id, std::vector<glm::vec3> &pos, std::vector<glm::vec2> &texCoords, glm::vec3 normal) {
+
+    ID = id;
+
+    m_FallBackTexCoord = glm::vec2(0);
 
     m_Pos.resize(pos.size());
     for (int i = 0; i < pos.size(); i++) {
         m_Pos[i] = &pos[i];
     }
-
-    m_TexCoords.resize(texCoords.size());
-    for (int i = 0; i < texCoords.size(); i++) {
+    size_t texSize = texCoords.size();
+    m_TexCoords.resize(texSize);
+    for (int i = 0; i < texSize; i++) {
         m_TexCoords[i] = &texCoords[i];
     }
+
+    if (texSize == 0) {
+        m_TexCoords.push_back(&m_FallBackTexCoord);
+    }
+
     m_Normals.resize(1);
     m_Normals[0] = normal;
+}
+
+Polygon::Polygon(ModelID id, std::vector<glm::vec3*> &pos, std::vector<glm::vec2*> &texCoords) : Polygon(id, pos, texCoords, {0, 0, 0}){}
+Polygon::Polygon(ModelID id, std::vector<glm::vec3*> &pos, std::vector<glm::vec2*> &texCoords, glm::vec3 normal) {
+    
+    ID = id;
+    m_FallBackTexCoord = glm::vec2(0);
+
+    m_Pos.resize(pos.size());
+    for (int i = 0; i < pos.size(); i++) {
+        m_Pos[i] = pos[i];
+    }
+    size_t texSize = texCoords.size();
+    m_TexCoords.resize(texSize);
+    for (int i = 0; i < texSize; i++) {
+        m_TexCoords[i] = texCoords[i];
+    }
+
+    if (texSize == 0) {
+        m_TexCoords.push_back(&m_FallBackTexCoord);
+    }
+
+    m_Normals.push_back(normal);
 }
 
 void Polygon::generateNormal() {
@@ -40,11 +72,12 @@ bool Polygon::CheckForErrors() const {
 
 std::vector<StandardVertex> Polygon::getStandardVertices() const {
 
+    size_t positionsSize = m_Pos.size();
     std::vector<StandardVertex> vertices;
-    vertices.reserve(m_Pos.size());
+    vertices.reserve(positionsSize);
 
-    float usingTex = (m_TexCoords.size() < 1) ? 0.0f : 1.0f;
-    for (int i = 0; i < m_Pos.size(); i++) {
+    float usingTex = (m_TexCoords.size() < positionsSize) ? 0.0f : 1.0f;
+    for (int i = 0; i < positionsSize; i++) {
         vertices.push_back({*m_Pos[i], m_Normals[0], *m_TexCoords[i * usingTex]});
     }
     return vertices;

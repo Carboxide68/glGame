@@ -25,28 +25,30 @@ std::vector<Polygon*> Mesh::createPolygons(std::vector<std::vector<uint>> positi
     if (normals[0] == glm::vec3(0)) {
         for (int i = 0; i < positionIndices.size(); i++) {
             const size_t positionIndexSize = positionIndices[i].size();
-            std::vector<glm::vec3> tempPositions;
-            std::vector<glm::vec2> tempTexCoords;
+            std::vector<glm::vec3*> tempPositions;
+            std::vector<glm::vec2*> tempTexCoords;
             tempPositions.resize(positionIndexSize);
             tempTexCoords.resize(positionIndexSize);
             for (int x = 0; x < positionIndexSize; x++) {
-                tempPositions[x] = m_Positions[positionIndices[i][x]];
-                tempTexCoords[x] = m_TexCoords[texIndices[i * texMult][x * texMult]];
+                tempPositions[x] = &m_Positions[positionIndices[i][x]];
+                tempTexCoords[x] = &m_TexCoords[texIndices[i * texMult][x * texMult]];
             }
-            m_Polygons.push_back(Polygon(tempPositions, tempTexCoords, normals[i]));
+            m_Polygons.push_back(Polygon(m_LastID, tempPositions, tempTexCoords, normals[i]));
+            m_LastID.polygon++;
         }
     } else {
         for (int i = 0; i < positionIndices.size(); i++) {
             const size_t positionIndexSize = positionIndices[i].size();
-            std::vector<glm::vec3> tempPositions;
-            std::vector<glm::vec2> tempTexCoords;
+            std::vector<glm::vec3*> tempPositions;
+            std::vector<glm::vec2*> tempTexCoords;
             tempPositions.resize(positionIndexSize);
             tempTexCoords.resize(positionIndexSize);
             for (int x = 0; x < positionIndexSize; x++) {
-                tempPositions[x] = m_Positions[positionIndices[i][x]];
-                tempTexCoords[x] = m_TexCoords[texIndices[i * texMult][x * texMult]];
+                tempPositions[x] = &m_Positions[positionIndices[i][x]];
+                tempTexCoords[x] = &m_TexCoords[texIndices[i * texMult][x * texMult]];
             }
-            m_Polygons.push_back(Polygon(tempPositions, tempTexCoords));
+            m_Polygons.push_back(Polygon(m_LastID, tempPositions, tempTexCoords));
+            m_LastID.polygon++;
         }
     }
     std::vector<Polygon*> pointerVector;
@@ -62,9 +64,8 @@ std::vector<Triangle> Mesh::assembleToTriangleMesh() {
 
 std::vector<StandardVertex> Mesh::getStandardVertices() const {
     std::vector<StandardVertex> vertices;
-    std::vector<StandardVertex> tempVertices;
     for (int i = 0; i < m_Polygons.size(); i++) {
-        tempVertices = m_Polygons[i].getStandardVertices();
+        std::vector<StandardVertex> tempVertices = m_Polygons[i].getStandardVertices();
         vertices.insert(vertices.end(), tempVertices.begin(), tempVertices.end());
     }
     return vertices;
@@ -73,8 +74,14 @@ std::vector<StandardVertex> Mesh::getStandardVertices() const {
 void Mesh::UpdatePolygonMap() {
     const size_t polygonSize = m_Polygons.size();
     m_PolygonMap.reserve(polygonSize + 1);
-    m_PolygonMap[0] = 0; //First index will be zero, second will be after the first is done etc
+    m_PolygonMap.push_back(0); //First index will be zero, second will be after the first is done etc
+    uint offset = 0;
     for (int i = 0; i < polygonSize; i++) {
-        m_PolygonMap[i + 1] = m_Polygons[i].m_Pos.size() * STANDARD_VERTEX_BYTE_SIZE; //Change this to a per-model standard
+        offset += m_Polygons[i].m_Pos.size();
+        m_PolygonMap.push_back(offset); //Change this to a per-model standard
     }
+}
+
+void Mesh::update() {
+    UpdatePolygonMap();
 }

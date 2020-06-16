@@ -15,7 +15,7 @@ struct Face { //Indices
 };
 
 constexpr bool faceFilter[256] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //NULL
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //NULL
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //DLE
     1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //SPACE
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //0
@@ -26,7 +26,7 @@ constexpr bool faceFilter[256] = {
 };
 
 const bool normalFilter[256] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //NULL
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //NULL
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //DLE
     1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //SPACE
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //0
@@ -36,7 +36,7 @@ const bool normalFilter[256] = {
     0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0  //p
 };
 const bool vertexFilter[256] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //NULL
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //NULL
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //DLE
     1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //SPACE
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //0
@@ -46,7 +46,7 @@ const bool vertexFilter[256] = {
     0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0  //p
 };
 const bool texFilter[256] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //NULL
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //NULL
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //DLE
     1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //SPACE
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //0
@@ -56,7 +56,7 @@ const bool texFilter[256] = {
     0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0  //p
 };
 const bool ifSeperator[256] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, //NULL
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, //NULL
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //DLE
     1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //SPACE
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //0
@@ -137,23 +137,23 @@ Face readFace(const std::string line) { //f
     Face myFace;
     std::vector<std::string> faceString;
     int i = 0;
-    for (; i < (lineSize - 1) && faceFilter[line[i]]; i++) {}
+    for (; i < lineSize && faceFilter[line[i]]; i++);
     int x = 0;
-    for(;i < (lineSize - 1);) {
-        for (;line[i] == ' '; i++) continue;
+    for(;i < lineSize;) {
         faceString.push_back("");
         for (;i < lineSize; i++) {
             if (ifSeperator[line[i]]) break;
             faceString[x].push_back(line[i]);
         }
         x++;
+        for (;ifSeperator[line[i]]; i++) continue;
     }   
+    size_t faceSize = faceString.size();
+    myFace.normal.resize(faceSize);
+    myFace.texCoord.resize(faceSize);
+    myFace.vertex.resize(faceSize);
 
-    myFace.normal.resize(faceString.size());
-    myFace.texCoord.resize(faceString.size());
-    myFace.vertex.resize(faceString.size());
-
-    for (int x = 0; x < faceString.size(); x++) {
+    for (int x = 0; x < faceSize; x++) {
         std::string tempS = "0";
         size_t faceSize = faceString[x].size();
         i = 0;
@@ -161,21 +161,21 @@ Face readFace(const std::string line) { //f
             if (faceString[x][i] == '/') break;
             tempS.push_back(faceString[x][i]);
         }
-        myFace.vertex[x] = stoi(tempS);
+        myFace.vertex[x] = (tempS == "0") ? 0 : stoi(tempS) - 1;
         tempS = "0";
         i++;
         for (;i < faceSize; i++) {
             if (faceString[x][i] == '/') break;
             tempS.push_back(faceString[x][i]);
         }
-        myFace.texCoord[x] = stoi(tempS);
+        myFace.texCoord[x] = (tempS == "0") ? 0 : stoi(tempS) - 1;
         tempS = "0";
         i++;
         for (;i < faceSize; i++) {
             if (faceString[x][i] == '/') break;
             tempS.push_back(faceString[x][i]);
         }
-        myFace.normal[x] = stoi(tempS);
+        myFace.normal[x] = (tempS == "0") ? 0 : stoi(tempS) - 1;
     }
     return myFace;
 }

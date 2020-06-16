@@ -55,7 +55,7 @@ void PointLight::setResolution(const uint shadow_width, const uint shadow_height
     m_SHADOW_WIDTH = shadow_width;
 }
 
-void PointLight::updateShadowmap(Mesh myMesh) { //Implement Scene object
+void PointLight::updateShadowmap() { //Implement Scene object
 
     m_PrepareShadowmap();
 

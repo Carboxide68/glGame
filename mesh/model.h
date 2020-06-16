@@ -17,12 +17,12 @@ public:
 
     bool loadModel(std::string path);
 
-    inline size_t getPolygonBufferLocation(const ModelID id) const {
+    inline size_t getPolygonLocation(const ModelID id) const {
         uint meshId = GetMeshIndexFromID(id);
-        return m_MeshMap[meshId] + m_Meshes[meshId].getPolygonBufferLocation(id);
+        return m_MeshMap[meshId] + m_Meshes[meshId].getPolygonLocation(id);
     }
 
-    inline size_t getMeshBufferLocation(const ModelID id) const {return m_MeshMap[GetMeshIndexFromID(id)];}
+    inline size_t getMeshLocation(const ModelID id) const {return m_MeshMap[GetMeshIndexFromID(id)];}
 
     void optimizieMeshes(); //I have no idea how to do this so low priority
 

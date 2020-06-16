@@ -18,7 +18,7 @@ public:
     inline void setName(const std::string name) {m_Name = name;}
 
     //Bytelocation of polygon in m_Polygons;
-    inline size_t getPolygonBufferLocation(const ModelID id) const {return m_PolygonMap[GetPolygonIndexFromID(id)];}
+    inline size_t getPolygonLocation(const ModelID id) const {return m_PolygonMap[GetPolygonIndexFromID(id)];}
 
     inline std::vector<Polygon*> getPolygons(uint offset, uint end) {
         std::vector<Polygon*> pointerVector;
@@ -30,6 +30,10 @@ public:
 
     Polygon* createPolygon(std::vector<uint> positionIndex, std::vector<uint> texIndex);
     std::vector<Polygon*> createPolygons(std::vector<std::vector<uint>> positionIndices, std::vector<std::vector<uint>> texIndices, std::vector<glm::vec3> normals = {glm::vec3(0)});
+
+    inline const std::vector<uint>& getPolygonMap() const {return m_PolygonMap;}
+
+    void update();
 
     friend class Model;
 

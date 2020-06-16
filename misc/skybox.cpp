@@ -4,6 +4,7 @@
 
 Skybox::Skybox(std::array<std::string, 6> cubeMap) {
     
+    glGenTextures(1, &m_TextureID);
     float m_SkyboxVertices[108] = {
         // positions          
         -1.0f,  1.0f, -1.0f,
@@ -67,6 +68,7 @@ void Skybox::draw(Camera &cam) {
     m_VAO.disuse();
     glDepthMask(GL_TRUE);
     glDepthFunc(GL_LESS);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
 
 unsigned int Skybox::loadCubemap(std::array<std::string, 6> faces) {

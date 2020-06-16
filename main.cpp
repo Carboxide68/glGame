@@ -1,11 +1,11 @@
-#include "mesh/mesh.h"
 #include "common/common.h"
+#include "mesh/model.h"
 #include "camera/camera.h"
 #include "shader/shader.h"
 #include "glObjects/vao.h"
 #include "glObjects/vbo.h"
 #include "misc/skybox.h"
-#include "shader/pointlight.h"
+// #include "shader/pointlight.h"
 #include "imgui/imgui.h"
 #include "imgui/examples/imgui_impl_glfw.h"
 #include "imgui/examples/imgui_impl_opengl3.h"
@@ -77,8 +77,8 @@ int main(void) {
     // GLCall(glDisable(GL_DEPTH_TEST));
     GLCall(glCullFace(GL_FRONT_AND_BACK));
 
-    PointLight myLight(Light{1, glm::vec3(0.7f), {}});
-    myLight.setPosition(glm::vec3(5.0f, 8.0f, 5.0f));
+    // PointLight myLight(Light{1, glm::vec3(0.7f), {}});
+    // myLight.setPosition(glm::vec3(5.0f, 8.0f, 5.0f));
 
     Skybox mySky = Skybox({
         "misc/skybox/right.jpg",
@@ -89,19 +89,18 @@ int main(void) {
         "misc/skybox/back.jpg"
     });
 
-    Mesh newObject;
-        newObject.parseFile("models/Apartment.obj");
+    Model myModel = Model();
+    myModel.loadModel("models/Apartment/Apartment.obj");
+    myModel.loadToBuffer();
 
-    newObject.loadMesh();
-    newObject.temp_setPosition(glm::vec3(5.0f, 5.0f, 5.0f));
-    newObject.temp_scale(.01f);
+    Shader shader = Shader("shader/meshShader.vert", "shader/meshShader.frag");
 
     player = Camera(glm::vec3(-3.0f, -3.0f, -3.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     player.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
 
-    myLight.setResolution(2048, 2048);
+    // myLight.setResolution(2048, 2048);
 
-    myLight.updateShadowmap(newObject);
+    // myLight.updateShadowmap(newObject);
 
     /* Initializing timer variables */
     double lastFrame = glfwGetTime();
@@ -120,17 +119,18 @@ int main(void) {
     ImGui::StyleColorsDark();
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");
+    ImGui_ImplOpenGL3_Init("#version 130");
     float rotAmount = 0.00f;
 
     bool update = false;
-    newObject.meshShader = Shader("shader/meshShadowShader.vert", "shader/meshShadowShader.frag");
 
     double frameTime = 0;
 
     // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
+
+        glfwPollEvents();
 
         G_triangles = 0;
 
@@ -156,35 +156,33 @@ int main(void) {
 
         if (update) {
             update = false;
-            myLight.updateShadowmap(newObject);
+            // myLight.updateShadowmap(newObject);
         }
 
-        newObject.meshShader.use();
-        newObject.meshShader.setUniform("viewPos", player.getPosition());
-        newObject.meshShader.setUniform("objColor", glm::vec3(0.673f, 0.2f, 0.802));
-        newObject.meshShader.setUniform("ambient", glm::vec3(0.1f));
-        newObject.meshShader.setUniform("shininess", 2.0f);
-        newObject.meshShader.setUniform("shadows", shadows);
-        newObject.meshShader.setUniform("bias", bias);
-        newObject.meshShader.setUniform("diskRadius", diskRadius);
-        myLight.lightUniform(&newObject.meshShader);
-        newObject.draw(player);
-
-        GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, 0));
-        
+        shader.use();
+        shader.setUniform("playerPos", player.getPosition());
+        shader.setUniform("objColor", glm::vec3(0.673f, 0.2f, 0.802));
+        shader.setUniform("ambient", glm::vec3(0.1f));
+        shader.setUniform("shininess", 2.0f);
+        shader.setUniform("light.position", glm::vec3(1.0f, 1.0f, 1.0f));
+        shader.setUniform("light.color", glm::vec3(1.0f, 1.0f, 1.0f));
+        shader.setUniform("assembledMatrix", player.getPerspectiveMatrix() * player.getViewMatrix() * modelMatrix);
+        shader.setUniform("model", modelMatrix);
+        myModel.draw();
+                
         mySky.draw(player);
-
+        
         glm::vec3 looking = player.getLookingDir();
         glm::vec3 position = player.getPosition();
-        ImGui::Begin("main");
+        ImGui::Begin("main");   
         ImGui::Text("Triangles: %d", G_triangles);
         ImGui::Text("FPS: %f", 1/deltaTime);
         ImGui::Text("Frame time: %f", frameTime);
         ImGui::Text("Looking direction: %f, %f, %f", looking.x, looking.y, looking.z);
         ImGui::InputFloat3("Position", player.getPositionValuePtr());
-        ImGui::InputFloat3("Light position", glm::value_ptr(*myLight.getPositionReference()));
+        // ImGui::InputFloat3("Light position", glm::value_ptr(*myLight.getPositionReference()));
         if (ImGui::Button("Light to location")) {
-            myLight.setPosition(player.getPosition());
+            // myLight.setPosition(player.getPosition());
         }
         ImGui::Text("MouseX: %f, MouseY: %f", lastXPos, lastYPos);
         ImGui::InputFloat("Movementspeed", &movementspeed, 0.01, 0.1, "%.3f");
@@ -209,7 +207,6 @@ int main(void) {
         glfwSwapBuffers(window);
 
         /* Poll for and process events */
-        glfwPollEvents();
     }
 
     ImGui_ImplOpenGL3_Shutdown();

@@ -15,7 +15,7 @@ public:
     inline void setName(const std::string name) {m_MaterialName = name;}
     inline std::string getName() const {return m_MaterialName;}
 
-    std::vector<uint> getIndices();
+    inline const std::vector<uint>& getIndices() const {return m_Indices;}
 
     inline void addPolygon(Polygon polygon) {m_Polygons.push_back(&polygon);};
     inline void addPolygon(Polygon* polygon) {m_Polygons.push_back(polygon);};
@@ -26,7 +26,9 @@ public:
     void generateTextures();
 
     uint textureCount() const;
-    inline uint indexCount() const {return m_Indices.size();};
+    inline uint indexCount() const {return m_Indices.size();}
+
+    void update();
 
 private:
 

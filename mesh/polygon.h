@@ -6,8 +6,10 @@
 class Polygon {
 public:
 
-    Polygon(std::vector<glm::vec3> &pos, std::vector<glm::vec2> &texCoords);
-    Polygon(std::vector<glm::vec3> &pos, std::vector<glm::vec2> &texCoords, glm::vec3 normal);
+    Polygon(ModelID id, std::vector<glm::vec3> &pos, std::vector<glm::vec2> &texCoords);
+    Polygon(ModelID id, std::vector<glm::vec3> &pos, std::vector<glm::vec2> &texCoords, glm::vec3 normal);
+    Polygon(ModelID id, std::vector<glm::vec3*> &pos, std::vector<glm::vec2*> &texCoords);
+    Polygon(ModelID id, std::vector<glm::vec3*> &pos, std::vector<glm::vec2*> &texCoords, glm::vec3 normal);
 
     inline void assignNormal(const glm::vec3 normal) {m_Normals[0] = normal;};
 
@@ -32,5 +34,7 @@ private:
     std::vector<glm::vec3*> m_Pos;          //the number of positions
 
     std::vector<glm::vec3> m_Normals;       //Only using first position of normal for now, will make some changes in future
+
+    glm::vec2 m_FallBackTexCoord;
 
 };

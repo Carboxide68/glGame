@@ -52,3 +52,7 @@ Structure:
 
 Model can ask Group for indices. When this is done, Group will ask for buffer location of different polygons. It will then return
 the correct indices. Model can ask Group to bind eventual textures and bind eventual uniforms. It is assumed that the amount of bindable textures is already accounted for. One can ask Group for how many textures it will bind when used. It is assumed at this time that a shader is already assigned, and the Group won't use one itself.
+
+In the GPU buffer vertices are stored as model - mesh - polygon for simplified buffermapping and better bufferswapping.
+
+Obj files use repeating textures, so set GL_TEXTURE_WRAP_S and GL_TEXTURE_WRAP_T to GL_REPEAT

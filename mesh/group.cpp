@@ -12,10 +12,6 @@ Group::Group(Model &parent, std::vector<Polygon> polygons) : m_ParentModel(paren
     }
 }
 
-std::vector<uint> Group::getIndices() {
-    return m_Indices;
-}
-
 void Group::addPolygons(std::vector<Polygon> &polygons) {
     m_Polygons.reserve(polygons.size());
     for (int i = 0; i < polygons.size(); i++) {
@@ -75,10 +71,14 @@ void Group::UpdateIndices() {
     size_t polygonLoc;
 
     for (uint i = 0; i < m_Polygons.size(); i++) {
-        polygonLoc = m_ParentModel.getPolygonBufferLocation((*m_Polygons[i]).ID);
+        polygonLoc = m_ParentModel.getPolygonLocation(m_Polygons[i]->ID);
         tempIndices = (*m_Polygons[i]).assembleIndices();
         for (auto index = tempIndices.begin(); index != tempIndices.end(); index++) {
             m_Indices.push_back(polygonLoc + *(index));
         }
     }
+}
+
+void Group::update() {
+    UpdateIndices();
 }

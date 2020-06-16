@@ -6,19 +6,20 @@
 #include <algorithm>
 
 Model::Model() {
-    // glGenVertexArrays(1, &m_VertexArrayID);
-    // glGenBuffers(1, &m_ElementBufferID);
-    // glGenBuffers(1, &m_VertexBufferID);
-    // glBindVertexArray(m_VertexArrayID);
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ElementBufferID);
-    // glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferID);
-    // glBindVertexArray(0);
+    GLCall(glGenVertexArrays(1, &m_VertexArrayID));
+    GLCall(glGenBuffers(1, &m_ElementBufferID));
+    GLCall(glGenBuffers(1, &m_VertexBufferID));
+    GLCall(glBindVertexArray(m_VertexArrayID));
+    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ElementBufferID));
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferID));
+    GLCall(glBindVertexArray(0));
+    m_LastID.ID = 0;
 }
 
 bool Model::loadModel(std::string path) {
-    std::vector<glm::vec3> vertices = {glm::vec3(0)};
-    std::vector<glm::vec2> texCoords = {glm::vec2(0)};
-    std::vector<glm::vec3> normals = {glm::vec3(0)};
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec2> texCoords;
+    std::vector<glm::vec3> normals;
     std::vector<Face> faces;
 
     struct gr {
@@ -100,6 +101,15 @@ bool Model::loadModel(std::string path) {
         std::cout << "Failed to open file the file " << path << "!" << std::endl;
         return false;
     }
+    if (vertices.size() < 1) {
+        vertices.push_back({glm::vec3(0)});
+    }
+    if (normals.size() < 1) {
+        normals.push_back({glm::vec3(0)});
+    }
+    if (texCoords.size() < 1) {
+        texCoords.push_back({glm::vec2(0)});
+    }
 
     meshes.push_back({"placeholder", faces.size() - 1}); //Last element in faces
     usingMaterial.push_back({"placeholder", faces.size() - 1}); //Last element in faces
@@ -111,6 +121,9 @@ bool Model::loadModel(std::string path) {
         std::vector<std::vector<uint>> vertexIndices;
         std::vector<std::vector<uint>> texIndices;
         for (int y = 0; y < meshFaces.size(); y++) {
+            std::vector<uint> tempVerticesIndices;
+            std::vector<uint> tempNormalIndices;
+            std::vector<uint> tempTexCoordsIndices;
             for (int x = 0; x < meshFaces[y].vertex.size(); x++) {
                 associatedVertices.push_back(vertices[meshFaces[y].vertex[x]]);
                 associatedNormals.push_back(normals[meshFaces[y].normal[x]]);
@@ -133,9 +146,10 @@ bool Model::loadModel(std::string path) {
     std::sort(names.begin(), names.end());
     auto last = std::unique(names.begin(), names.end());
     names.erase(last, names.end());
+    m_Groups.clear();
     for (int i = 0; i < names.size(); i++) {
         m_Groups.push_back(Group(*this));
-        m_Groups.back().setName(names[i]);
+        m_Groups[i].setName(names[i]);
     }
     };
     std::map<std::string, Group*> groupMap;
@@ -148,36 +162,32 @@ bool Model::loadModel(std::string path) {
         auto polygonList = std::vector<Polygon*>(start, end);
         groupMap[usingMaterial[i].name]->addPolygons(polygonList);
     }
+    for (int i = 0; i < m_Meshes.size(); i++) {
+        m_Meshes[i].update();
+    }
+    update();
+    for (int i = 0; i < m_Groups.size(); i++) {
+        m_Groups[i].update();
+    }
     return true;
 }
 
 void Model::draw() { //Assumes a shader is bound
-    glBindVertexArray(m_VertexArrayID);
+    GLCall(glBindVertexArray(m_VertexArrayID));
     uint drawPos = 0;
     for (int i = 0; i < m_Groups.size(); i++) {
         uint temp = m_Groups[i].indexCount();
         m_Groups[i].bindMaterial();
-        glDrawElements(GL_TRIANGLES, temp, GL_UNSIGNED_INT, (void *)drawPos);
+        GLCall(glDrawElements(GL_TRIANGLES, temp, GL_UNSIGNED_INT, (void *)drawPos));
         drawPos += temp;
     }
+    GLCall(glBindVertexArray(0));
 }
 
 void Model::update() {
 
     UpdateMeshMap();
-    glBindVertexArray(m_VertexArrayID);
-    std::vector<StandardVertex> vertices;
-    std::vector<uint> indices;
-    for (int i = 0; i < m_Groups.size(); i++) {
-        auto temp = m_Groups[i].getIndices();
-        indices.insert(indices.end(), temp.begin(), temp.end());
-    }
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint), (void*)indices.data(), GL_STATIC_DRAW);
-    for (int i = 0; i < m_Meshes.size(); i++) {
-        auto temp = m_Meshes[i].getStandardVertices();
-        vertices.insert(vertices.end(), temp.begin(), temp.end());
-    }
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * STANDARD_VERTEX_BYTE_SIZE, (void*)vertices.data(), GL_STATIC_DRAW);
+    
 }
 
 void Model::optimizieMeshes() {
@@ -185,9 +195,31 @@ void Model::optimizieMeshes() {
 }
 
 void Model::UpdateMeshMap() {
-    m_MeshMap.resize(m_Meshes.size() + 1);
-    m_MeshMap[0] = 0;
+    m_MeshMap.reserve(m_Meshes.size() + 1);
     for (int i = 0; i < m_Meshes.size(); i++) {
-        m_MeshMap[i + 1] = m_Meshes[i].m_PolygonMap.back();
+        m_MeshMap.push_back(m_Meshes[i].m_PolygonMap[0]);
     }
+}
+
+void Model::loadToBuffer() {
+    GLCall(glBindVertexArray(m_VertexArrayID));
+    std::vector<StandardVertex> vertices;
+    vertices.clear();
+    std::vector<uint> indices;
+    for (int i = 0; i < m_Groups.size(); i++) {
+        auto temp = m_Groups[i].getIndices();
+        indices.insert(indices.end(), temp.begin(), temp.end());
+    }
+    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ElementBufferID));
+    GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint), (void*)indices.data(), GL_STATIC_DRAW));
+    for (int i = 0; i < m_Meshes.size(); i++) {
+        auto temp = m_Meshes[i].getStandardVertices();
+        vertices.insert(vertices.end(), temp.begin(), temp.end());
+    }
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferID));
+    GLCall(glBufferData(GL_ARRAY_BUFFER, vertices.size() * STANDARD_VERTEX_BYTE_SIZE, (void*)vertices.data(), GL_STATIC_DRAW));
+    GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, false, STANDARD_VERTEX_BYTE_SIZE, NULL));
+    GLCall(glVertexAttribPointer(1, 3, GL_FLOAT, false, STANDARD_VERTEX_BYTE_SIZE, NULL));
+    GLCall(glVertexAttribPointer(2, 2, GL_FLOAT, false, STANDARD_VERTEX_BYTE_SIZE, NULL));
+    GLCall(glBindVertexArray(0));
 }
