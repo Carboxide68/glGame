@@ -67,12 +67,12 @@ void Group::EvaluateMaterialProperties() {
 
 void Group::UpdateIndices() {
 
-    std::vector<uint> tempIndices;
     size_t polygonLoc;
+    m_Indices.clear();
 
     for (uint i = 0; i < m_Polygons.size(); i++) {
         polygonLoc = m_ParentModel.getPolygonLocation(m_Polygons[i]->ID);
-        tempIndices = (*m_Polygons[i]).assembleIndices();
+        std::vector<uint> tempIndices = m_Polygons[i]->assembleIndices();
         for (auto index = tempIndices.begin(); index != tempIndices.end(); index++) {
             m_Indices.push_back(polygonLoc + *(index));
         }

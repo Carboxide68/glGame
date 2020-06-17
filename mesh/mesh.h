@@ -43,6 +43,7 @@ private:
     //in the object and want to load the changes into the GPU buffer;  If the GPU buffer and the MeshMap are not synched, this may 
     //lead to problems.
     void UpdatePolygonMap();
+    void UpdatePolygonNormals();
 
     inline uint GetPolygonIndexFromID(ModelID id) const {return id.polygon;}
 

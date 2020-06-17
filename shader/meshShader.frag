@@ -4,6 +4,7 @@ out vec4 color;
 
 in vec3 FragPos;
 in vec3 Normal;
+in vec2 texCoord;
 
 struct Light {
 

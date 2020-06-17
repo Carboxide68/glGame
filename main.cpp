@@ -90,7 +90,7 @@ int main(void) {
     });
 
     Model myModel = Model();
-    myModel.loadModel("models/Apartment/Apartment.obj");
+    myModel.loadModel("models/simple-table.obj");
     myModel.loadToBuffer();
 
     Shader shader = Shader("shader/meshShader.vert", "shader/meshShader.frag");
@@ -158,23 +158,26 @@ int main(void) {
             update = false;
             // myLight.updateShadowmap(newObject);
         }
+        GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, 0));
 
         shader.use();
         shader.setUniform("playerPos", player.getPosition());
         shader.setUniform("objColor", glm::vec3(0.673f, 0.2f, 0.802));
         shader.setUniform("ambient", glm::vec3(0.1f));
         shader.setUniform("shininess", 2.0f);
-        shader.setUniform("light.position", glm::vec3(1.0f, 1.0f, 1.0f));
+        shader.setUniform("light.position", glm::vec3(0.0f, 0.0f, 0.0f));
         shader.setUniform("light.color", glm::vec3(1.0f, 1.0f, 1.0f));
         shader.setUniform("assembledMatrix", player.getPerspectiveMatrix() * player.getViewMatrix() * modelMatrix);
         shader.setUniform("model", modelMatrix);
         myModel.draw();
                 
+        GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, 0));
+
         mySky.draw(player);
         
         glm::vec3 looking = player.getLookingDir();
         glm::vec3 position = player.getPosition();
-        ImGui::Begin("main");   
+        ImGui::Begin("main");
         ImGui::Text("Triangles: %d", G_triangles);
         ImGui::Text("FPS: %f", 1/deltaTime);
         ImGui::Text("Frame time: %f", frameTime);

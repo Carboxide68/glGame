@@ -11,10 +11,16 @@ Mesh::Mesh(ModelID ID, std::vector<glm::vec3> positions, std::vector<glm::vec2> 
 Mesh::Mesh(ModelID ID, std::vector<std::array<float, 3>> positions, std::vector<std::array<float, 2>> texCoords) {
     m_MeshID = ID;
     m_LastID = ID;
-    uint texMult = (texCoords.size() < 1) ? 0.0f : 1.0f;
-    for (int i = 0; i < positions.size(); i++) {
-        m_Positions[i] = glm::vec3(positions[i][0], positions[i][1], positions[i][2]);
-        m_TexCoords[i * texMult] = glm::vec2(positions[i * texMult][0], positions[i * texMult][1]);
+    const size_t posSize = positions.size();
+    for (int i = 0; i < posSize; i++) {
+        m_Positions.push_back({positions[i][0], positions[i][1], positions[i][1]});
+    }
+    const size_t texSize = texCoords.size();
+    for (int i = 0; i < texSize; i++) {
+        m_TexCoords.push_back({texCoords[i][0], texCoords[i][1]});
+    }
+    if (texSize < 1) {
+        m_TexCoords.push_back({0, 0});
     }
 }
 
@@ -22,16 +28,16 @@ std::vector<Polygon*> Mesh::createPolygons(std::vector<std::vector<uint>> positi
     uint texMult = (texIndices.size() < positionIndices.size()) ? 0.0f : 1.0f;
     m_Polygons.reserve(positionIndices.size());
     auto polygonStart = m_Polygons.end();
-    if (normals[0] == glm::vec3(0)) {
+    if (normals[0] != glm::vec3(0)) {
         for (int i = 0; i < positionIndices.size(); i++) {
             const size_t positionIndexSize = positionIndices[i].size();
             std::vector<glm::vec3*> tempPositions;
             std::vector<glm::vec2*> tempTexCoords;
-            tempPositions.resize(positionIndexSize);
-            tempTexCoords.resize(positionIndexSize);
+            tempPositions.reserve(positionIndexSize);
+            tempTexCoords.reserve(positionIndexSize);
             for (int x = 0; x < positionIndexSize; x++) {
-                tempPositions[x] = &m_Positions[positionIndices[i][x]];
-                tempTexCoords[x] = &m_TexCoords[texIndices[i * texMult][x * texMult]];
+                tempPositions.push_back(&m_Positions[positionIndices[i][x]]);
+                tempTexCoords.push_back(&m_TexCoords[texIndices[i * texMult][x * texMult]]);
             }
             m_Polygons.push_back(Polygon(m_LastID, tempPositions, tempTexCoords, normals[i]));
             m_LastID.polygon++;
@@ -41,11 +47,11 @@ std::vector<Polygon*> Mesh::createPolygons(std::vector<std::vector<uint>> positi
             const size_t positionIndexSize = positionIndices[i].size();
             std::vector<glm::vec3*> tempPositions;
             std::vector<glm::vec2*> tempTexCoords;
-            tempPositions.resize(positionIndexSize);
-            tempTexCoords.resize(positionIndexSize);
+            tempPositions.reserve(positionIndexSize);
+            tempTexCoords.reserve(positionIndexSize);
             for (int x = 0; x < positionIndexSize; x++) {
-                tempPositions[x] = &m_Positions[positionIndices[i][x]];
-                tempTexCoords[x] = &m_TexCoords[texIndices[i * texMult][x * texMult]];
+                tempPositions.push_back(&m_Positions[positionIndices[i][x]]);
+                tempTexCoords.push_back(&m_TexCoords[texIndices[i * texMult][x * texMult]]);
             }
             m_Polygons.push_back(Polygon(m_LastID, tempPositions, tempTexCoords));
             m_LastID.polygon++;
@@ -82,6 +88,14 @@ void Mesh::UpdatePolygonMap() {
     }
 }
 
+void Mesh::UpdatePolygonNormals() {
+    const size_t polygonSize = m_Polygons.size();
+    for (int i = 0; i < polygonSize; i++) {
+        m_Polygons[i].generateNormal();
+    }
+}
+
 void Mesh::update() {
     UpdatePolygonMap();
+    UpdatePolygonNormals();
 }

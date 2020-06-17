@@ -88,7 +88,7 @@ glm::vec3 readVertex(const std::string line) { //v
     return vertex;
 }
 
-//Currently only support 2D textures. Explore later
+//Currently only support 2D textures. Expr lore later
 glm::vec2 readTexCoord(const std::string line) { //vt
     const size_t lineSize = line.size();
     std::array<std::string, 2> stringTexCoords;
@@ -116,7 +116,7 @@ glm::vec3 readNormal(const std::string line) { //vn
     glm::vec3 normal;
     int i = 0;
     for (; i < lineSize; i++) {
-        if (ifSeperator[line[i]] || faceFilter[line[i]]) continue;
+        if (ifSeperator[line[i]] || normalFilter[line[i]]) continue;
         break;
     }
     for(int x = 0;x < 3;x++) {
@@ -146,7 +146,8 @@ Face readFace(const std::string line) { //f
             faceString[x].push_back(line[i]);
         }
         x++;
-        for (;ifSeperator[line[i]]; i++) continue;
+        for (;line[i] == ' '; i++) continue;
+        if (ifSeperator[line[i]]) break;
     }   
     size_t faceSize = faceString.size();
     myFace.normal.resize(faceSize);

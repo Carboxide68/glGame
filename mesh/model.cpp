@@ -36,6 +36,9 @@ bool Model::loadModel(std::string path) {
     std::vector<mat> usingMaterial;
     std::vector<std::string> materialLibs;
 
+    meshes.push_back({"_CO_STANDARD", 0});
+    usingMaterial.push_back({"_CO_STANDARD", 0});
+
     std::vector<Polygon *> polygons;
 
     std::ifstream myFile;
@@ -93,8 +96,10 @@ bool Model::loadModel(std::string path) {
         }
         if (myFile.eof()) {
             std::cout << "Successfully loaded model!" << std::endl;
+            myFile.close();
         } else {
             std::cout << "Failed to load model! Error: " << myFile.rdstate() << std::endl;
+            myFile.close();
             return false;
         }
     } else {
@@ -111,27 +116,58 @@ bool Model::loadModel(std::string path) {
         texCoords.push_back({glm::vec2(0)});
     }
 
-    meshes.push_back({"placeholder", faces.size() - 1}); //Last element in faces
-    usingMaterial.push_back({"placeholder", faces.size() - 1}); //Last element in faces
+    meshes.push_back({"placeholder", faces.size()}); //Last element in faces
+    usingMaterial.push_back({"placeholder", faces.size()}); //Last element in faces
     for (int i = 0; i < meshes.size() - 1; i++) {
         std::vector<Face> meshFaces(faces.begin() + meshes[i].loc, faces.begin() + meshes[i + 1].loc);
+
+        std::vector<uint> uniqueVertexIndices;
+        std::vector<uint> uniqueNormalIndices;
+        std::vector<uint> uniqueTexIndices;
+        uint vertexCounter = 0;
+        uint normalCounter = 0;
+        uint texCounter = 0;
+
+        uniqueVertexIndices.resize(vertices.size(), -1);
+        uniqueNormalIndices.resize(normals.size(), -1);
+        uniqueTexIndices.resize(texCoords.size(), -1);
+
         std::vector<glm::vec3> associatedVertices;
         std::vector<glm::vec3> associatedNormals;
         std::vector<glm::vec2> associatedTexCoords;
+
         std::vector<std::vector<uint>> vertexIndices;
         std::vector<std::vector<uint>> texIndices;
         for (int y = 0; y < meshFaces.size(); y++) {
-            std::vector<uint> tempVerticesIndices;
-            std::vector<uint> tempNormalIndices;
-            std::vector<uint> tempTexCoordsIndices;
+            vertexIndices.push_back({});
+            texIndices.push_back({});
             for (int x = 0; x < meshFaces[y].vertex.size(); x++) {
-                associatedVertices.push_back(vertices[meshFaces[y].vertex[x]]);
-                associatedNormals.push_back(normals[meshFaces[y].normal[x]]);
-                associatedTexCoords.push_back(texCoords[meshFaces[y].texCoord[x]]);
+                uint &vertexRef = uniqueVertexIndices[meshFaces[y].vertex[x]];
+                uint &normalRef = uniqueNormalIndices[meshFaces[y].normal[x]];
+                uint &texRef = uniqueTexIndices[meshFaces[y].texCoord[x]];
+
+                if (vertexRef > vertexCounter) { //This is only true if this is the first time we've encountered this index
+                    vertexRef = vertexCounter;
+                    vertexCounter++;
+                    associatedVertices.push_back(vertices[meshFaces[y].vertex[x]]);
+                }
+                vertexIndices[y].push_back(vertexRef);
+
+                if (normalRef > normalCounter) {
+                    normalRef = normalCounter;
+                    associatedNormals.push_back(normals[normalRef]);
+                    normalCounter++;
+                }
+
+                if (texRef > texCounter) {
+                    texRef = texCounter;
+                    associatedTexCoords.push_back(texCoords[meshFaces[y].texCoord[x]]);
+                    texCounter++;
+                }
+                texIndices[y].push_back(texRef);
             }
-            vertexIndices.push_back(meshFaces[y].vertex);
-            texIndices.push_back(meshFaces[y].texCoord);
         }
+
         m_Meshes.push_back(Mesh(m_LastID, associatedVertices, associatedTexCoords));
         auto tempPolygons = m_Meshes[i].createPolygons(vertexIndices, texIndices, associatedNormals);
         polygons.insert(polygons.end(), tempPolygons.begin(), tempPolygons.end());
@@ -140,7 +176,7 @@ bool Model::loadModel(std::string path) {
     }
     { //Change this for loading material libs.
     std::vector<std::string> names;
-    for (int i = 0; i < usingMaterial.size(); i++) {
+    for (int i = 0; i < usingMaterial.size() - 1; i++) {
         names.push_back(usingMaterial[i].name);
     }
     std::sort(names.begin(), names.end());
@@ -177,7 +213,7 @@ void Model::draw() { //Assumes a shader is bound
     uint drawPos = 0;
     for (int i = 0; i < m_Groups.size(); i++) {
         uint temp = m_Groups[i].indexCount();
-        m_Groups[i].bindMaterial();
+        // m_Groups[i].bindMaterial();
         GLCall(glDrawElements(GL_TRIANGLES, temp, GL_UNSIGNED_INT, (void *)drawPos));
         drawPos += temp;
     }
@@ -207,6 +243,7 @@ void Model::loadToBuffer() {
     vertices.clear();
     std::vector<uint> indices;
     for (int i = 0; i < m_Groups.size(); i++) {
+        m_Groups[i].update();
         auto temp = m_Groups[i].getIndices();
         indices.insert(indices.end(), temp.begin(), temp.end());
     }
@@ -218,8 +255,12 @@ void Model::loadToBuffer() {
     }
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferID));
     GLCall(glBufferData(GL_ARRAY_BUFFER, vertices.size() * STANDARD_VERTEX_BYTE_SIZE, (void*)vertices.data(), GL_STATIC_DRAW));
-    GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, false, STANDARD_VERTEX_BYTE_SIZE, NULL));
-    GLCall(glVertexAttribPointer(1, 3, GL_FLOAT, false, STANDARD_VERTEX_BYTE_SIZE, NULL));
-    GLCall(glVertexAttribPointer(2, 2, GL_FLOAT, false, STANDARD_VERTEX_BYTE_SIZE, NULL));
+    GLCall(glEnableVertexAttribArray(0));
+    GLCall(glEnableVertexAttribArray(1));
+    GLCall(glEnableVertexAttribArray(2));
+    GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, false, STANDARD_VERTEX_BYTE_SIZE, 0));
+    GLCall(glVertexAttribPointer(1, 3, GL_FLOAT, false, STANDARD_VERTEX_BYTE_SIZE, (void*)(3 * sizeof(float))));
+    GLCall(glVertexAttribPointer(2, 2, GL_FLOAT, false, STANDARD_VERTEX_BYTE_SIZE, (void*)(6 * sizeof(float))));
     GLCall(glBindVertexArray(0));
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }

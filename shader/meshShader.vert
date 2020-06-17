@@ -9,9 +9,11 @@ uniform mat4 model;
 
 out vec3 FragPos;
 out vec3 Normal;
+out vec2 texCoord;
 
 void main() {
 	gl_Position = assembledMatrix * vec4(vPos, 1.0);
 	Normal = mat3(transpose(inverse(model))) * vNormal;
     FragPos = (model * vec4(vPos, 1.0)).xyz;
+	texCoord = TexCoord;
 }

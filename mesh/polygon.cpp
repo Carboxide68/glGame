@@ -72,7 +72,7 @@ bool Polygon::CheckForErrors() const {
 
 std::vector<StandardVertex> Polygon::getStandardVertices() const {
 
-    size_t positionsSize = m_Pos.size();
+    const size_t positionsSize = m_Pos.size();
     std::vector<StandardVertex> vertices;
     vertices.reserve(positionsSize);
 
@@ -96,7 +96,6 @@ std::vector<uint> Polygon::assembleIndices() {
         indices.push_back(i - 1);
         indices.push_back(i);
     }
-
     return indices;
 }
 
