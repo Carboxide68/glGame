@@ -90,7 +90,7 @@ int main(void) {
     });
 
     Model myModel = Model();
-    myModel.loadModel("models/simple-table.obj");
+    myModel.loadModel("models/CanMonster.obj");
     myModel.loadToBuffer();
 
     Shader shader = Shader("shader/meshShader.vert", "shader/meshShader.frag");
@@ -110,6 +110,9 @@ int main(void) {
     modelMatrix[3][0] = 5.0f;
     modelMatrix[3][1] = 5.0f;
     modelMatrix[3][2] = 5.0f;
+    modelMatrix[0][0] = 0.1f;
+    modelMatrix[1][1] = 0.1f;
+    modelMatrix[2][2] = 0.1f;
 
     glm::mat4 matrix;
 
@@ -125,6 +128,8 @@ int main(void) {
     bool update = false;
 
     double frameTime = 0;
+
+    glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
 
     // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     /* Loop until the user closes the window */
@@ -165,7 +170,7 @@ int main(void) {
         shader.setUniform("objColor", glm::vec3(0.673f, 0.2f, 0.802));
         shader.setUniform("ambient", glm::vec3(0.1f));
         shader.setUniform("shininess", 2.0f);
-        shader.setUniform("light.position", glm::vec3(0.0f, 0.0f, 0.0f));
+        shader.setUniform("light.position", lightPos);
         shader.setUniform("light.color", glm::vec3(1.0f, 1.0f, 1.0f));
         shader.setUniform("assembledMatrix", player.getPerspectiveMatrix() * player.getViewMatrix() * modelMatrix);
         shader.setUniform("model", modelMatrix);
@@ -183,9 +188,9 @@ int main(void) {
         ImGui::Text("Frame time: %f", frameTime);
         ImGui::Text("Looking direction: %f, %f, %f", looking.x, looking.y, looking.z);
         ImGui::InputFloat3("Position", player.getPositionValuePtr());
-        // ImGui::InputFloat3("Light position", glm::value_ptr(*myLight.getPositionReference()));
+        ImGui::InputFloat3("Light position", glm::value_ptr(lightPos));
         if (ImGui::Button("Light to location")) {
-            // myLight.setPosition(player.getPosition());
+            lightPos = player.getPosition();
         }
         ImGui::Text("MouseX: %f, MouseY: %f", lastXPos, lastYPos);
         ImGui::InputFloat("Movementspeed", &movementspeed, 0.01, 0.1, "%.3f");

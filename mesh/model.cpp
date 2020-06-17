@@ -155,7 +155,7 @@ bool Model::loadModel(std::string path) {
 
                 if (normalRef > normalCounter) {
                     normalRef = normalCounter;
-                    associatedNormals.push_back(normals[normalRef]);
+                    associatedNormals.push_back(normals[meshFaces[y].normal[x]]);
                     normalCounter++;
                 }
 
@@ -215,7 +215,7 @@ void Model::draw() { //Assumes a shader is bound
         uint temp = m_Groups[i].indexCount();
         // m_Groups[i].bindMaterial();
         GLCall(glDrawElements(GL_TRIANGLES, temp, GL_UNSIGNED_INT, (void *)drawPos));
-        drawPos += temp;
+        drawPos += temp * sizeof(uint);
     }
     GLCall(glBindVertexArray(0));
 }
@@ -232,8 +232,11 @@ void Model::optimizieMeshes() {
 
 void Model::UpdateMeshMap() {
     m_MeshMap.reserve(m_Meshes.size() + 1);
+    m_MeshMap.push_back(0);
+    uint tot = 0;
     for (int i = 0; i < m_Meshes.size(); i++) {
-        m_MeshMap.push_back(m_Meshes[i].m_PolygonMap[0]);
+        tot += m_Meshes[i].m_PolygonMap.back();
+        m_MeshMap.push_back(tot);
     }
 }
 
@@ -248,12 +251,14 @@ void Model::loadToBuffer() {
         indices.insert(indices.end(), temp.begin(), temp.end());
     }
     GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ElementBufferID));
+    printf("Allocating %dB of GPU memory!\n", indices.size() * sizeof(uint));
     GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint), (void*)indices.data(), GL_STATIC_DRAW));
     for (int i = 0; i < m_Meshes.size(); i++) {
         auto temp = m_Meshes[i].getStandardVertices();
         vertices.insert(vertices.end(), temp.begin(), temp.end());
     }
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferID));
+    printf("Allocating %dB of GPU memory!\n", vertices.size() * STANDARD_VERTEX_BYTE_SIZE);
     GLCall(glBufferData(GL_ARRAY_BUFFER, vertices.size() * STANDARD_VERTEX_BYTE_SIZE, (void*)vertices.data(), GL_STATIC_DRAW));
     GLCall(glEnableVertexAttribArray(0));
     GLCall(glEnableVertexAttribArray(1));

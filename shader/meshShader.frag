@@ -39,6 +39,6 @@ void main() {
 
     vec3 result = ambient + specular + diffuse;
 
-    color = vec4(result * objColor, 1.0);
-    // color = vec4(norm, 1.0);
+    // color = vec4(vec3(1/(mod(gl_PrimitiveID,100) + 1), 10/(mod(gl_PrimitiveID,1000) + 1), 100/(mod(gl_PrimitiveID,10000) + 1)), 1.0);
+    color = vec4(norm, 1.0);
 }
