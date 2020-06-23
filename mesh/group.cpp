@@ -2,7 +2,9 @@
 #include "model.h"
 
 
-Group::Group(Model &parent) :  m_ParentModel(parent) {}
+Group::Group(Model &parent) :  m_ParentModel(parent) {
+    m_Material = EMPTY_MATERIAL;
+}
 
 
 Group::Group(Model &parent, std::vector<Polygon> polygons) : m_ParentModel(parent) {
@@ -10,6 +12,9 @@ Group::Group(Model &parent, std::vector<Polygon> polygons) : m_ParentModel(paren
     for (int i = 0; i < polygons.size(); i++) {
         m_Polygons[i] = &polygons[i];
     }
+
+    m_Material = EMPTY_MATERIAL;
+
 }
 
 void Group::addPolygons(std::vector<Polygon> &polygons) {
@@ -23,8 +28,16 @@ void Group::addPolygons(std::vector<Polygon*> &polygons) {
     m_Polygons.insert(m_Polygons.end(), polygons.begin(), polygons.end());
 }
 
-void Group::bindMaterial() {
+void Group::bindMaterial(Shader shader) {
     
+    shader.setUniform("material.ambient", m_Material.ambient);
+    shader.setUniform("material.diffuse", m_Material.diffuse);
+    shader.setUniform("material.specular", m_Material.specular);
+    shader.setUniform("material.illum", m_Material.illum);
+    shader.setUniform("material.specE", m_Material.specE);
+    shader.setUniform("material.opacity", m_Material.opacity);
+    shader.setUniform("material.opticalDensity", m_Material.opticalDensity);
+    //Implement binding of textures
 }
 
 void Group::generateTextures() {
@@ -33,36 +46,6 @@ void Group::generateTextures() {
 
 uint Group::textureCount() const {
     
-}
-
-void Group::EvaluateMaterialProperties() {
-
-    memset(m_MaterialProperties.data(), (uint) 1, m_MaterialProperties.size() * sizeof(uint));
-
-    if (m_Material.diffuse[0] > 1.0f) { //Colors will never be greater than 1;
-        m_MaterialProperties[0] = 0;
-    }
-    if (m_Material.diffuse[0] > 1.0f) { //Colors will never be greater than 1;
-        m_MaterialProperties[1] = 0;
-    }
-    if (m_Material.diffuse[0] > 1.0f) { //Colors will never be greater than 1;
-        m_MaterialProperties[2] = 0;
-    }
-    if (m_Material.specStrength < 0.0f) {
-        m_MaterialProperties[3] = 0;
-    }
-    if (m_Material.opacity < 0.0f) {
-        m_MaterialProperties[4] = 0;
-    }
-    if (m_Material.ambientT == "") {
-        m_MaterialProperties[5] = 0;
-    }
-    if (m_Material.diffuseT == "") {
-        m_MaterialProperties[6] = 0;
-    }
-    if (m_Material.specularT == "") {
-        m_MaterialProperties[7] = 0;
-    }
 }
 
 void Group::UpdateIndices() {

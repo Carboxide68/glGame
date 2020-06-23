@@ -7,6 +7,7 @@ class Shader {
 
 public:
 
+
 	Shader(std::string vSS, std::string fSS) : Shader(vSS, "", fSS){}
 
 	Shader(std::string vSS, std::string gSS, std::string fSS) {
@@ -127,7 +128,6 @@ public:
 		GLCall(setUniform(getUniform(name), value));
 	}
 
-
 	void setUniform(GLuint ID, int value) const {
 		GLCall(glUniform1i(ID, value))
 	}
@@ -136,6 +136,13 @@ public:
 		GLCall(setUniform(getUniform(name), value));
 	}
 
+	void setUniform(GLuint ID, uint value) const {
+		GLCall(glUniform1ui(ID, value))
+	}
+
+	void setUniform(std::string name, uint value) const {
+		GLCall(setUniform(getUniform(name), value));
+	}
 
 	void setUniform(GLuint ID, bool value) const {
 		GLCall(glUniform1i(ID, (int) value))

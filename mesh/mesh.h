@@ -29,7 +29,8 @@ public:
     }
 
     Polygon* createPolygon(std::vector<uint> positionIndex, std::vector<uint> texIndex);
-    std::vector<Polygon*> createPolygons(std::vector<std::vector<uint>> positionIndices, std::vector<std::vector<uint>> texIndices, std::vector<glm::vec3> normals = {glm::vec3(0)});
+    std::vector<Polygon*> createPolygons(std::vector<std::vector<uint>> positionIndices, std::vector<std::vector<uint>> texIndices, std::vector<std::vector<glm::vec3>> normals = {{glm::vec3(0)}});
+    std::vector<Polygon*> createPolygons(std::vector<std::vector<uint>> positionIndices, std::vector<std::vector<uint>> texIndices, std::vector<glm::vec3> normals, std::vector<std::vector<uint>> normalIndices);
 
     inline const std::vector<uint>& getPolygonMap() const {return m_PolygonMap;}
 

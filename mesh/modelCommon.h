@@ -24,18 +24,24 @@ union ModelID {
     ulong ID;
 };
 
+struct UniformTexture {
+    std::string path;
+    std::string name;
+};
+
 struct Material {
 
     glm::vec3 ambient;
     glm::vec3 diffuse;
     glm::vec3 specular;
-    float specStrength;
+    uint illum;
+    float specE;
     float opacity;
-    std::string ambientT;
-    std::string diffuseT;
-    std::string specularT;
+    float opticalDensity;
+    std::vector<UniformTexture> textures;
 };
-const uint MATERIAL_PROPERTY_COUNT = 8; //The number of arguments in Material
+
+const Material EMPTY_MATERIAL = {{0.2f, 0.2f, 0.2f}, {0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, 0, 32.0f, 0.0f, 0.0f, {}};
 
 struct StandardVertex {
     glm::vec3 pos;

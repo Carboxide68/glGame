@@ -66,6 +66,52 @@ const bool ifSeperator[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  //p
 };
 
+std::string readName(const std::string before, const std::string line) {
+    const size_t lineSize = line.size();
+    std::string name;
+    int i = line.find(before) + before.size();
+    for (; i < lineSize; i++) {
+        if (line[i] == ' ') continue;
+        break;
+    }
+    for (;i < lineSize; i++) {
+        if (ifSeperator[line[i]]) break;
+        name.push_back(line[i]);
+    }
+    return name;
+}
+
+float readFloat(const std::string before, const std::string line) {
+    const size_t lineSize = line.size();
+    size_t i = line.find(before) + before.size();
+    std::string stringFloat;
+    for (; line[i] == ' '; i++) continue;
+    for (;i < lineSize; i++) {
+        if (ifSeperator[line[i]]) break;
+        stringFloat.push_back(line[i]);
+    }
+    return stof(stringFloat);
+}
+
+std::array<float, 3> read3f(const std::string before, const std::string line) {
+    const size_t lineSize = line.size();
+    std::array<float, 3> floats;
+    std::array<std::string, 3> stringVertex;
+    size_t i = line.find(before) + before.size();
+    for (; line[i] == ' '; i++) continue;
+    for(int x = 0;x < 3;x++) {
+        for (; line[i] == ' '; i++) continue;
+        for (;i < lineSize; i++) {
+            if (ifSeperator[line[i]]) break;
+            stringVertex[x].push_back(line[i]);
+        }
+    }
+    floats[0] = std::stof(stringVertex[0]);
+    floats[1] = std::stof(stringVertex[1]);
+    floats[2] = std::stof(stringVertex[2]);
+    return floats;
+}
+
 glm::vec3 readVertex(const std::string line) { //v
     const size_t lineSize = line.size();
     std::array<std::string, 3> stringVertex;
@@ -133,6 +179,7 @@ glm::vec3 readNormal(const std::string line) { //vn
 }
 
 Face readFace(const std::string line) { //f
+
     const size_t lineSize = line.size();
     Face myFace;
     std::vector<std::string> faceString;
@@ -182,25 +229,7 @@ Face readFace(const std::string line) { //f
 }
 
 std::string readMeshName(const std::string line) { //g
-    const size_t lineSize = line.size();
-    std::string name;
-    int i = 0;
-    bool passedg = false;
-    for (; i < lineSize; i++) {
-        char l = line[i];
-        if (l == ' ') continue;
-        if (l == 'g' && !passedg) { //Ignore the first g that comes up
-            passedg = true;
-            continue;
-        }
-        break;
-    }
-    for (;i < lineSize; i++) {
-        char l = line[i];
-        if (ifSeperator[l]) break;
-        name.push_back(l);
-    }
-    return name;
+    return readName("g", line);
 }
 
 bool readSmoothingGroup(const std::string line) {
@@ -211,31 +240,9 @@ bool readSmoothingGroup(const std::string line) {
 }
 
 std::string readMaterial(const std::string line) {
-    const size_t lineSize = line.size();
-    std::string name;
-    int i = line.find("usemtl") + 6;
-    for (; i < lineSize; i++) {
-        if (line[i] == ' ') continue;
-        break;
-    }
-    for (;i < lineSize; i++) {
-        if (ifSeperator[line[i]]) break;
-        name.push_back(line[i]);
-    }
-    return name;
+    return readName("usemtl", line);
 }
 
 std::string readMateriallib(const std::string line) {
-    const size_t lineSize = line.size();
-    std::string name;
-    int i = line.find("mtllib") + 6;
-    for (; i < lineSize; i++) {
-        if (line[i] == ' ') continue;
-        break;
-    }
-    for (;i < lineSize; i++) {
-        if (ifSeperator[line[i]]) break;
-        name.push_back(line[i]);
-    }
-    return name;
+    return readName("mtllib", line);
 }

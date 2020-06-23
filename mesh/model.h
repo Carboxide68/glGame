@@ -3,17 +3,20 @@
 #include "../common/common.h"
 #include "modelCommon.h"
 #include "../glObjects/vao.h"
+#include "../shader/shader.h"
 #include "mesh.h"
 #include "group.h"
 
 class NextGenShader{};
+
+struct Face;
 
 class Model {
 public:
 
     Model();
 
-    void draw();
+    void draw(Shader shader);
 
     bool loadModel(std::string path);
 
@@ -32,6 +35,16 @@ public:
 
 private:
 
+    struct gr {
+        std::string name; 
+        uint loc;
+    };
+
+    struct mat {
+        std::string name; 
+        uint loc;
+    };
+
     //Function is used to update the internal buffermap of the model object. This should be done whenever you change something
     //in the object and want to load this into the GPU buffer;  If the GPU buffer and the MeshMap are not synched, this may 
     //lead to problems.
@@ -40,6 +53,11 @@ private:
     inline uint GetMeshIndexFromID(ModelID id) const {return id.mesh;};
 
     inline ModelID GenerateID() {m_LastID.mesh += 1; return m_LastID;}
+
+    bool LoadOBJ(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &texCoords, std::vector<Face> &faces, 
+        std::vector<gr> &meshes, std::vector<mat> &usingMaterial, std::vector<std::string> &materialLibs, std::string path);
+
+    bool LoadMTL(const std::vector<std::string> &materialLibs);
 
     uint m_VertexArrayID;
     uint m_VertexBufferID;

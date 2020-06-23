@@ -1,4 +1,5 @@
 #include "common/common.h"
+#include <deque>
 #include "mesh/model.h"
 #include "camera/camera.h"
 #include "shader/shader.h"
@@ -6,9 +7,11 @@
 #include "glObjects/vbo.h"
 #include "misc/skybox.h"
 // #include "shader/pointlight.h"
-#include "imgui/imgui.h"
-#include "imgui/examples/imgui_impl_glfw.h"
-#include "imgui/examples/imgui_impl_opengl3.h"
+#include "imgui2/imgui.h"
+#include "imgui2/imgui_impl_glfw.h"
+#include "imgui2/imgui_impl_opengl3.h"
+
+#define FPS_HISTORY_SIZE 45
 
 /* Declaring callbacks */
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -31,7 +34,12 @@ bool state = false;
 Camera player;
 glm::vec3 movement;
 
+std::deque<float> fps_history;
+
 int main(void) {
+
+    fps_history.resize(FPS_HISTORY_SIZE);
+
     GLFWwindow* window;
 
     /* Initialize the library */
@@ -76,7 +84,6 @@ int main(void) {
     GLCall(glEnable(GL_DEPTH_TEST));
     // GLCall(glDisable(GL_DEPTH_TEST));
     GLCall(glCullFace(GL_FRONT_AND_BACK));
-
     // PointLight myLight(Light{1, glm::vec3(0.7f), {}});
     // myLight.setPosition(glm::vec3(5.0f, 8.0f, 5.0f));
 
@@ -90,7 +97,7 @@ int main(void) {
     });
 
     Model myModel = Model();
-    myModel.loadModel("models/CanMonster.obj");
+    myModel.loadModel("models/SciFi/Corridor.obj");
     myModel.loadToBuffer();
 
     Shader shader = Shader("shader/meshShader.vert", "shader/meshShader.frag");
@@ -110,10 +117,11 @@ int main(void) {
     modelMatrix[3][0] = 5.0f;
     modelMatrix[3][1] = 5.0f;
     modelMatrix[3][2] = 5.0f;
-    modelMatrix[0][0] = 0.1f;
-    modelMatrix[1][1] = 0.1f;
-    modelMatrix[2][2] = 0.1f;
+    modelMatrix[0][0] = 0.01f;
+    modelMatrix[1][1] = 0.01f;
+    modelMatrix[2][2] = 0.01f;
 
+    float scale = modelMatrix[0][0];
     glm::mat4 matrix;
 
     IMGUI_CHECKVERSION();
@@ -129,7 +137,12 @@ int main(void) {
 
     double frameTime = 0;
 
-    glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 lightPos = glm::vec3(5.0f, 5.0f, 20.0f);
+
+    float interval[2] = {0.0f, 5.0f};
+    ImFont *font1 = io.Fonts->AddFontDefault();
+    ImFont *font2 = io.Fonts->AddFontDefault();
+    font2->Scale = 1.5f;
 
     // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     /* Loop until the user closes the window */
@@ -146,8 +159,8 @@ int main(void) {
         currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-
-        // printf("Frametime: %fms; %fFPS\n", deltaTime*1000, 1/deltaTime);
+        fps_history.push_back(io.Framerate);
+        fps_history.pop_front();
 
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -167,14 +180,11 @@ int main(void) {
 
         shader.use();
         shader.setUniform("playerPos", player.getPosition());
-        shader.setUniform("objColor", glm::vec3(0.673f, 0.2f, 0.802));
-        shader.setUniform("ambient", glm::vec3(0.1f));
-        shader.setUniform("shininess", 2.0f);
         shader.setUniform("light.position", lightPos);
         shader.setUniform("light.color", glm::vec3(1.0f, 1.0f, 1.0f));
         shader.setUniform("assembledMatrix", player.getPerspectiveMatrix() * player.getViewMatrix() * modelMatrix);
         shader.setUniform("model", modelMatrix);
-        myModel.draw();
+        myModel.draw(shader);
                 
         GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, 0));
 
@@ -182,9 +192,22 @@ int main(void) {
         
         glm::vec3 looking = player.getLookingDir();
         glm::vec3 position = player.getPosition();
+        static float values[FPS_HISTORY_SIZE] = {};
+        float average = 0;
+
+        for(int n = 0; n < FPS_HISTORY_SIZE; n++)
+        {
+        values[n] = fps_history[n];
+        average += fps_history[n];
+        }
+
+        average /= FPS_HISTORY_SIZE;
+        char overlay[32];
+        sprintf(overlay, "avg %.2f fps (%.2f ms)", average, 1000.0f/average);
+
         ImGui::Begin("main");
         ImGui::Text("Triangles: %d", G_triangles);
-        ImGui::Text("FPS: %f", 1/deltaTime);
+        ImGui::PlotLines("", values, IM_ARRAYSIZE(values), 0, overlay, 0.0f, 100.0f, ImVec2(240,60));
         ImGui::Text("Frame time: %f", frameTime);
         ImGui::Text("Looking direction: %f, %f, %f", looking.x, looking.y, looking.z);
         ImGui::InputFloat3("Position", player.getPositionValuePtr());
@@ -194,17 +217,22 @@ int main(void) {
         }
         ImGui::Text("MouseX: %f, MouseY: %f", lastXPos, lastYPos);
         ImGui::InputFloat("Movementspeed", &movementspeed, 0.01, 0.1, "%.3f");
-        ImGui::InputFloat("Object rotation", &rotAmount, 0.001, 0.01, "%.3f");
-        if (ImGui::Button("Update shadowmap")) {update = true;};
-
-        ImGui::InputFloat("Bias", &bias, 0.001, 0.01, "%.5f");
-        ImGui::InputFloat("Disk radius", &diskRadius, 0.001, 0.011, "%.5f");
+        ImGui::InputFloat2("Min, Max", interval);
+        if (ImGui::SliderFloat("Scale", &scale, interval[0], interval[1], "%.4f")) {
+            modelMatrix[0][0] = scale;
+            modelMatrix[1][1] = scale;
+            modelMatrix[2][2] = scale;
+        }
 
         ImGui::End();
-
-        ImGui::Begin("matrix");
-        ImGui::Text(matrixToString(player.getLookingMatrix()).c_str());
+        ImGui::PushFont(font2);
+        ImGui::Begin("Controls");
+        ImGui::Text("Escape: Exit Program");
+        ImGui::Text("Space: Toggle Cursor");
+        ImGui::Text("Alt: Activate Triangle View");
+        ImGui::Text("WASDQE: Forward, Left, Backward, Right, Down, Up");
         ImGui::End();
+        ImGui::PopFont();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

@@ -24,7 +24,7 @@ Mesh::Mesh(ModelID ID, std::vector<std::array<float, 3>> positions, std::vector<
     }
 }
 
-std::vector<Polygon*> Mesh::createPolygons(std::vector<std::vector<uint>> positionIndices, std::vector<std::vector<uint>> texIndices, std::vector<glm::vec3> normals) {
+std::vector<Polygon*> Mesh::createPolygons(std::vector<std::vector<uint>> positionIndices, std::vector<std::vector<uint>> texIndices, std::vector<std::vector<glm::vec3>> normals) {
     uint texMult = (texIndices.size() < positionIndices.size()) ? 0.0f : 1.0f;
     m_Polygons.reserve(positionIndices.size());
     auto polygonStart = m_Polygons.end();
@@ -39,11 +39,39 @@ std::vector<Polygon*> Mesh::createPolygons(std::vector<std::vector<uint>> positi
             tempPositions.push_back(&m_Positions[positionIndices[i][x]]);
             tempTexCoords.push_back(&m_TexCoords[texIndices[i * texMult][x * texMult]]);
         }
-        if (normals[0] != glm::vec3(0)) {
+        if (normals[0][0] != glm::vec3(0)) {
             m_Polygons.push_back(Polygon(m_LastID, tempPositions, tempTexCoords, normals[i]));
         } else {
             m_Polygons.push_back(Polygon(m_LastID, tempPositions, tempTexCoords));
         }
+        m_LastID.polygon++;
+    }
+    std::vector<Polygon*> pointerVector;
+    for (auto i = polygonStart; i != m_Polygons.end(); i++) {
+        pointerVector.push_back(&(*i));
+    }
+    return pointerVector;
+}
+
+std::vector<Polygon*> Mesh::createPolygons(std::vector<std::vector<uint>> positionIndices, std::vector<std::vector<uint>> texIndices, std::vector<glm::vec3> normals, std::vector<std::vector<uint>> normalIndices) {
+    uint texMult = (texIndices.size() < positionIndices.size()) ? 0.0f : 1.0f;
+    m_Polygons.reserve(positionIndices.size());
+    auto polygonStart = m_Polygons.end();
+    
+    for (int i = 0; i < positionIndices.size(); i++) {
+        const size_t positionIndexSize = positionIndices[i].size();
+        std::vector<glm::vec3*> tempPositions;
+        std::vector<glm::vec2*> tempTexCoords;
+        std::vector<glm::vec3> tempNormals;
+        tempPositions.reserve(positionIndexSize);
+        tempTexCoords.reserve(positionIndexSize);
+        tempNormals.reserve(positionIndexSize);
+        for (int x = 0; x < positionIndexSize; x++) {
+            tempPositions.push_back(&m_Positions[positionIndices[i][x]]);
+            tempTexCoords.push_back(&m_TexCoords[texIndices[i * texMult][x * texMult]]);
+            tempNormals.push_back(normals[normalIndices[i][x]]);
+        }
+        m_Polygons.push_back(Polygon(m_LastID, tempPositions, tempTexCoords, tempNormals));
         m_LastID.polygon++;
     }
     std::vector<Polygon*> pointerVector;

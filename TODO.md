@@ -18,11 +18,12 @@ Shader architecture:
         materialN.ambient; The ambient color of the material (less important)
         materialN.diffuse; The diffuse color of the material (will be used for ambient and specular if otherwise is not specified)
         materialN.specular; The Specular color of the material (less important)
-        materialN.specularStrength; The specular strength of the material  (important)
+        materialN.specularE; The specular strength of the material  (important)
         materialN.opacity; The opacity of the material (less important)
         materialN.ambientTexture; Texture for ambient color, should be multiplied with materialN.ambient
         materialN.diffuseTexture; Texture for diffuse color, should be multiplied with materialN.diffuse
         materialN.specularTexture; Texture for specular color, should be multiplied with materialN.specular
+        materialN.specularETexture
 
         N is used to allow multiple materials in the same drawcall
 

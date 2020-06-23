@@ -49,5 +49,5 @@ void main() {
 
     vec3 result = ambient + specular + diffuse;
 
-    color = vec4(vec3(norm), 1.0);
+    color = vec4(vec3(result), 1.0);
 }

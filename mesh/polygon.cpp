@@ -1,8 +1,8 @@
 #include "polygon.h"
 
-Polygon::Polygon(ModelID id, std::vector<glm::vec3> &pos, std::vector<glm::vec2> &texCoords) : Polygon(id, pos, texCoords, {0, 0, 0}){}
+Polygon::Polygon(ModelID id, std::vector<glm::vec3> &pos, std::vector<glm::vec2> &texCoords) : Polygon(id, pos, texCoords, {{0, 0, 0}}){hasNormal = false;}
 
-Polygon::Polygon(ModelID id, std::vector<glm::vec3> &pos, std::vector<glm::vec2> &texCoords, glm::vec3 normal) {
+Polygon::Polygon(ModelID id, std::vector<glm::vec3> &pos, std::vector<glm::vec2> &texCoords, std::vector<glm::vec3> normal) {
 
     ID = id;
 
@@ -23,11 +23,11 @@ Polygon::Polygon(ModelID id, std::vector<glm::vec3> &pos, std::vector<glm::vec2>
     }
 
     m_Normals.resize(1);
-    m_Normals[0] = normal;
+    m_Normals = normal;
 }
 
-Polygon::Polygon(ModelID id, std::vector<glm::vec3*> &pos, std::vector<glm::vec2*> &texCoords) : Polygon(id, pos, texCoords, {0, 0, 0}){}
-Polygon::Polygon(ModelID id, std::vector<glm::vec3*> &pos, std::vector<glm::vec2*> &texCoords, glm::vec3 normal) {
+Polygon::Polygon(ModelID id, std::vector<glm::vec3*> &pos, std::vector<glm::vec2*> &texCoords) : Polygon(id, pos, texCoords, {{0, 0, 0}}){hasNormal = false;}
+Polygon::Polygon(ModelID id, std::vector<glm::vec3*> &pos, std::vector<glm::vec2*> &texCoords, std::vector<glm::vec3> normal) {
     
     ID = id;
     m_FallBackTexCoord = glm::vec2(0);
@@ -46,14 +46,18 @@ Polygon::Polygon(ModelID id, std::vector<glm::vec3*> &pos, std::vector<glm::vec2
         m_TexCoords.push_back(&m_FallBackTexCoord);
     }
 
-    m_Normals.push_back(normal);
+    m_Normals = normal;
 }
 
-void Polygon::generateNormal() {
+void Polygon::generateNormal(bool force) {
     if (!CheckForErrors()) {
         return;
     }
-    m_Normals[0] = glm::normalize(glm::cross(*m_Pos[1] - *m_Pos[0], *m_Pos[2] - *m_Pos[0]));
+    if (!hasNormal || force || m_Normals[0].length() < 0.9f) {
+        for (int i = 0; i < m_Normals.size(); i++) {
+            m_Normals[i] = glm::normalize(glm::cross(*m_Pos[1] - *m_Pos[0], *m_Pos[2] - *m_Pos[0]));
+        }
+    }
 }
 
 bool Polygon::CheckForErrors() const {
@@ -77,8 +81,9 @@ std::vector<StandardVertex> Polygon::getStandardVertices() const {
     vertices.reserve(positionsSize);
 
     float usingTex = (m_TexCoords.size() < positionsSize) ? 0.0f : 1.0f;
+    uint usingNorm = (m_Normals.size() == positionsSize) ? 1 : 0;
     for (int i = 0; i < positionsSize; i++) {
-        vertices.push_back({*m_Pos[i], m_Normals[0], *m_TexCoords[i * usingTex]});
+        vertices.push_back({*m_Pos[i], m_Normals[i * usingNorm], *m_TexCoords[i * usingTex]});
     }
     return vertices;
 }

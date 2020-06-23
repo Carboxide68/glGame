@@ -3,6 +3,7 @@
 #include "../common/common.h"
 #include "modelCommon.h"
 #include "polygon.h"
+#include "../shader/shader.h"
 
 class Model;
 
@@ -15,6 +16,8 @@ public:
     inline void setName(const std::string name) {m_MaterialName = name;}
     inline std::string getName() const {return m_MaterialName;}
 
+    inline void setMaterial(Material mat) {m_Material = mat;}
+
     inline const std::vector<uint>& getIndices() const {return m_Indices;}
 
     inline void addPolygon(Polygon polygon) {m_Polygons.push_back(&polygon);};
@@ -22,7 +25,7 @@ public:
     void addPolygons(std::vector<Polygon> &polygons);
     void addPolygons(std::vector<Polygon*> &polygons);
 
-    void bindMaterial();
+    void bindMaterial(Shader shader);
     void generateTextures();
 
     uint textureCount() const;
@@ -32,7 +35,6 @@ public:
 
 private:
 
-    void EvaluateMaterialProperties();
 
     void UpdateIndices();
 
