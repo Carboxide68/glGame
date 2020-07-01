@@ -11,8 +11,6 @@ public:
     Polygon(ModelID id, std::vector<glm::vec3*> &pos, std::vector<glm::vec2*> &texCoords);
     Polygon(ModelID id, std::vector<glm::vec3*> &pos, std::vector<glm::vec2*> &texCoords, std::vector<glm::vec3> normal);
 
-    inline void assignNormal(const glm::vec3 normal) {m_Normals[0] = normal;};
-
     void generateNormal(bool force = false);
 
     std::vector<uint> assembleIndices();
@@ -24,13 +22,14 @@ public:
 
     ModelID ID;
 
+    bool HasNormal = true;
+
     friend class Mesh;
 
 private:
 
     bool CheckForErrors() const;
 
-    bool hasNormal = true;
 
     std::vector<glm::vec2*> m_TexCoords;    //If there are TexCoords the count should be the same as
     std::vector<glm::vec3*> m_Pos;          //the number of positions

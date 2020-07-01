@@ -84,16 +84,16 @@ bool Model::loadModel(std::string path) {
             }
         }
 
-        m_Meshes.push_back(Mesh(m_LastID, associatedVertices, associatedTexCoords));
-        auto tempPolygons = m_Meshes[i].createPolygons(vertexIndices, texIndices, associatedNormals, normalIndices);
+        Meshes.push_back(Mesh(m_LastID, associatedVertices, associatedTexCoords));
+        auto tempPolygons = Meshes[i].createPolygons(vertexIndices, texIndices, associatedNormals, normalIndices);
         polygons.insert(polygons.end(), tempPolygons.begin(), tempPolygons.end());
-        m_Meshes[i].setName(meshes[i].name);
+        Meshes[i].setName(meshes[i].name);
         m_LastID.mesh += 1;
     }
     
     std::map<std::string, Group*> groupMap;
-    for (int i = 0; i < m_Groups.size(); i++) {
-        groupMap[m_Groups[i].getName()] = &m_Groups[i];
+    for (int i = 0; i < Groups.size(); i++) {
+        groupMap[Groups[i].Name] = &Groups[i];
     }
     for (int i = 0; i < usingMaterial.size() - 1; i++) {
         auto start = polygons.begin() + usingMaterial[i].loc;
@@ -101,16 +101,16 @@ bool Model::loadModel(std::string path) {
         auto polygonList = std::vector<Polygon*>(start, end);
         auto group = groupMap[usingMaterial[i].name];
         if (group == 0) {
-            group = &m_Groups[0];
+            group = &Groups[0];
         }
         group->addPolygons(polygonList);
     }
-    for (int i = 0; i < m_Meshes.size(); i++) {
-        m_Meshes[i].update();
+    for (int i = 0; i < Meshes.size(); i++) {
+        Meshes[i].update();
     }
     update();
-    for (int i = 0; i < m_Groups.size(); i++) {
-        m_Groups[i].update();
+    for (int i = 0; i < Groups.size(); i++) {
+        Groups[i].update();
     }
     return true;
 }
@@ -118,10 +118,10 @@ bool Model::loadModel(std::string path) {
 void Model::draw(Shader shader) { //Assumes a shader is bound
     GLCall(glBindVertexArray(m_VertexArrayID));
     uint drawPos = 0;
-    for (int i = 0; i < m_Groups.size(); i++) {
-        uint temp = m_Groups[i].indexCount();
+    for (int i = 0; i < Groups.size(); i++) {
+        uint temp = Groups[i].indexCount();
         if (temp != 0) {
-            m_Groups[i].bindMaterial(shader);
+            Groups[i].bindMaterial(shader);
             GLCall(glDrawElements(GL_TRIANGLES, temp, GL_UNSIGNED_INT, (void *)drawPos));
             drawPos += temp * sizeof(uint);
             G_triangles += temp/3;
@@ -141,11 +141,11 @@ void Model::optimizieMeshes() {
 }
 
 void Model::UpdateMeshMap() {
-    m_MeshMap.reserve(m_Meshes.size() + 1);
+    m_MeshMap.reserve(Meshes.size() + 1);
     m_MeshMap.push_back(0);
     uint tot = 0;
-    for (int i = 0; i < m_Meshes.size(); i++) {
-        tot += m_Meshes[i].m_PolygonMap.back();
+    for (int i = 0; i < Meshes.size(); i++) {
+        tot += Meshes[i].m_PolygonMap.back();
         m_MeshMap.push_back(tot);
     }
 }
@@ -155,16 +155,16 @@ void Model::loadToBuffer() {
     std::vector<StandardVertex> vertices;
     vertices.clear();
     std::vector<uint> indices;
-    for (int i = 0; i < m_Groups.size(); i++) {
-        m_Groups[i].update();
-        auto temp = m_Groups[i].getIndices();
+    for (int i = 0; i < Groups.size(); i++) {
+        Groups[i].update();
+        auto temp = Groups[i].getIndices();
         indices.insert(indices.end(), temp.begin(), temp.end());
     }
     GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ElementBufferID));
     printf("Allocating %luB of GPU memory!\n", indices.size() * sizeof(uint));
     GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint), (void*)indices.data(), GL_STATIC_DRAW));
-    for (int i = 0; i < m_Meshes.size(); i++) {
-        auto temp = m_Meshes[i].getStandardVertices();
+    for (int i = 0; i < Meshes.size(); i++) {
+        auto temp = Meshes[i].getStandardVertices();
         vertices.insert(vertices.end(), temp.begin(), temp.end());
     }
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferID));
@@ -276,8 +276,8 @@ bool Model::LoadMTL(const std::vector<std::string> &materialLibs) {
 
     std::string line;
     std::ifstream myFile;
-    m_Groups.push_back(Group(*this));
-    m_Groups[0].setName("_CO_STANDARD");
+    Groups.push_back(Group(*this));
+    Groups[0].Name = "_CO_STANDARD";
     for (int z = 0; z < materialLibs.size(); z++) {
         uint y = 0;
         line.clear();
@@ -286,11 +286,11 @@ bool Model::LoadMTL(const std::vector<std::string> &materialLibs) {
         if (myFile.is_open()) {
             for (std::getline(myFile, line); myFile.good(); std::getline(myFile, line)) {
                 if (line.find("newmtl") != std::string::npos) {
-                    m_Groups[y].setMaterial(tempMat);
+                    Groups[y].Material = tempMat;
                     tempMat = {};
                     y++;
-                    m_Groups.push_back(*this);
-                    m_Groups[y].setName(readName("newmtl", line));
+                    Groups.push_back(*this);
+                    Groups[y].Name = readName("newmtl", line);
                     continue;
                 } else if (line.find("illum") != std::string::npos) {
                     tempMat.illum = (uint)readFloat("illum", line);

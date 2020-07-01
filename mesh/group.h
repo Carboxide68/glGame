@@ -13,11 +13,6 @@ public:
     Group(Model &parent);
     Group(Model &parent, std::vector<Polygon> polygons);
 
-    inline void setName(const std::string name) {m_MaterialName = name;}
-    inline std::string getName() const {return m_MaterialName;}
-
-    inline void setMaterial(Material mat) {m_Material = mat;}
-
     inline const std::vector<uint>& getIndices() const {return m_Indices;}
 
     inline void addPolygon(Polygon polygon) {m_Polygons.push_back(&polygon);};
@@ -33,6 +28,9 @@ public:
 
     void update();
 
+    Material Material;
+    std::string Name;
+
 private:
 
 
@@ -43,8 +41,6 @@ private:
     std::vector<Polygon*> m_Polygons;
     std::vector<uint> m_Indices; //Internally stored indices for omptimized assembling
 
-    std::string m_MaterialName;
-    Material m_Material;
     std::array<uint, 8> m_MaterialProperties;
     std::array<uint, 3> m_Textures;
 };

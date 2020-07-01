@@ -1,6 +1,6 @@
 #include "polygon.h"
 
-Polygon::Polygon(ModelID id, std::vector<glm::vec3> &pos, std::vector<glm::vec2> &texCoords) : Polygon(id, pos, texCoords, {{0, 0, 0}}){hasNormal = false;}
+Polygon::Polygon(ModelID id, std::vector<glm::vec3> &pos, std::vector<glm::vec2> &texCoords) : Polygon(id, pos, texCoords, {{0, 0, 0}}){HasNormal = false;}
 
 Polygon::Polygon(ModelID id, std::vector<glm::vec3> &pos, std::vector<glm::vec2> &texCoords, std::vector<glm::vec3> normal) {
 
@@ -26,7 +26,7 @@ Polygon::Polygon(ModelID id, std::vector<glm::vec3> &pos, std::vector<glm::vec2>
     m_Normals = normal;
 }
 
-Polygon::Polygon(ModelID id, std::vector<glm::vec3*> &pos, std::vector<glm::vec2*> &texCoords) : Polygon(id, pos, texCoords, {{0, 0, 0}}){hasNormal = false;}
+Polygon::Polygon(ModelID id, std::vector<glm::vec3*> &pos, std::vector<glm::vec2*> &texCoords) : Polygon(id, pos, texCoords, {{0, 0, 0}}){HasNormal = false;}
 Polygon::Polygon(ModelID id, std::vector<glm::vec3*> &pos, std::vector<glm::vec2*> &texCoords, std::vector<glm::vec3> normal) {
     
     ID = id;
@@ -53,7 +53,7 @@ void Polygon::generateNormal(bool force) {
     if (!CheckForErrors()) {
         return;
     }
-    if (!hasNormal || force || m_Normals[0].length() < 0.9f) {
+    if (!HasNormal || force || m_Normals[0].length() < 0.9f) {
         for (int i = 0; i < m_Normals.size(); i++) {
             m_Normals[i] = glm::normalize(glm::cross(*m_Pos[1] - *m_Pos[0], *m_Pos[2] - *m_Pos[0]));
         }

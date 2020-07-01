@@ -15,8 +15,6 @@ public:
     std::vector<Triangle> assembleToTriangleMesh();
     std::vector<StandardVertex> getStandardVertices() const;
 
-    inline void setName(const std::string name) {m_Name = name;}
-
     //Bytelocation of polygon in m_Polygons;
     inline size_t getPolygonLocation(const ModelID id) const {return m_PolygonMap[GetPolygonIndexFromID(id)];}
 
@@ -36,6 +34,8 @@ public:
 
     void update();
 
+    std::string Name;
+
     friend class Model;
 
 private:
@@ -53,11 +53,8 @@ private:
     std::vector<Polygon> m_Polygons;
     std::vector<uint> m_PolygonMap; //Index N is index (N - 1) + PolygonTriangleCount
 
-    std::vector<glm::vec3> m_Positions; //Vertex data is stored on a per-mesh basis
+    std::vector<glm::vec3> m_Vertices; //Vertex data is stored on a per-mesh basis
     std::vector<glm::vec2> m_TexCoords;
 
-    std::string m_Name;
-
-    ModelID m_MeshID;
     ModelID m_LastID;
 };

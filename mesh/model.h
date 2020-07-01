@@ -22,7 +22,7 @@ public:
 
     inline size_t getPolygonLocation(const ModelID id) const {
         uint meshId = GetMeshIndexFromID(id);
-        return m_MeshMap[meshId] + m_Meshes[meshId].getPolygonLocation(id);
+        return m_MeshMap[meshId] + Meshes[meshId].getPolygonLocation(id);
     }
 
     inline size_t getMeshLocation(const ModelID id) const {return m_MeshMap[GetMeshIndexFromID(id)];}
@@ -32,6 +32,9 @@ public:
     void update();
 
     void loadToBuffer();
+
+    std::vector<Mesh> Meshes; //The meshes used in the model
+    std::vector<Group> Groups;//The groups used in the model
 
 private:
 
@@ -62,9 +65,6 @@ private:
     uint m_VertexArrayID;
     uint m_VertexBufferID;
     uint m_ElementBufferID;
-
-    std::vector<Mesh> m_Meshes; //The meshes used in the model
-    std::vector<Group> m_Groups;//The groups used in the model
 
     std::vector<uint> m_MeshMap; //Index N is index (N - 1) + MeshTriangleCount
 
