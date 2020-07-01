@@ -11,9 +11,14 @@ Model::Model() {
     GLCall(glGenBuffers(1, &m_VertexBufferID));
     GLCall(glBindVertexArray(m_VertexArrayID));
     GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ElementBufferID));
-    GLCall(glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferID));
     GLCall(glBindVertexArray(0));
     m_LastID.ID = 0;
+}
+
+Model::~Model() {
+    GLCall(glDeleteVertexArrays(1, &m_VertexArrayID));
+    GLCall(glDeleteBuffers(1, &m_ElementBufferID));
+    GLCall(glDeleteBuffers(1, &m_VertexBufferID));
 }
 
 bool Model::loadModel(std::string path) {
@@ -151,6 +156,7 @@ void Model::UpdateMeshMap() {
 }
 
 void Model::loadToBuffer() {
+    unLoad();
     GLCall(glBindVertexArray(m_VertexArrayID));
     std::vector<StandardVertex> vertices;
     vertices.clear();
@@ -178,6 +184,18 @@ void Model::loadToBuffer() {
     GLCall(glVertexAttribPointer(2, 2, GL_FLOAT, false, STANDARD_VERTEX_BYTE_SIZE, (void*)(6 * sizeof(float))));
     GLCall(glBindVertexArray(0));
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
+}
+
+void Model::unLoad() {
+    GLCall(glDeleteVertexArrays(1, &m_VertexArrayID));
+    GLCall(glDeleteBuffers(1, &m_ElementBufferID));
+    GLCall(glDeleteBuffers(1, &m_VertexBufferID));
+    GLCall(glGenVertexArrays(1, &m_VertexArrayID));
+    GLCall(glGenBuffers(1, &m_ElementBufferID));
+    GLCall(glGenBuffers(1, &m_VertexBufferID));
+    GLCall(glBindVertexArray(m_VertexArrayID));
+    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ElementBufferID));
+    GLCall(glBindVertexArray(0));
 }
 
 bool Model::LoadOBJ(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &texCoords,

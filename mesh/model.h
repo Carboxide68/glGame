@@ -15,6 +15,7 @@ class Model {
 public:
 
     Model();
+    ~Model();
 
     void draw(Shader shader);
 
@@ -32,6 +33,7 @@ public:
     void update();
 
     void loadToBuffer();
+    void unLoad();
 
     std::vector<Mesh> Meshes; //The meshes used in the model
     std::vector<Group> Groups;//The groups used in the model

@@ -41,7 +41,7 @@ struct Material {
     std::vector<UniformTexture> textures;
 };
 
-const Material EMPTY_MATERIAL = {{0.2f, 0.2f, 0.2f}, {0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, 0, 32.0f, 0.0f, 0.0f, {}};
+const Material EMPTY_MATERIAL = {{0.2f, 0.2f, 0.2f}, {0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, 1, 32.0f, 0.0f, 0.0f, {}};
 
 struct StandardVertex {
     glm::vec3 pos;
