@@ -87,7 +87,7 @@ bool Model::loadModel(std::string path) {
         Meshes.push_back(Mesh(m_LastID, associatedVertices, associatedTexCoords));
         auto tempPolygons = Meshes[i].createPolygons(vertexIndices, texIndices, associatedNormals, normalIndices);
         polygons.insert(polygons.end(), tempPolygons.begin(), tempPolygons.end());
-        Meshes[i].setName(meshes[i].name);
+        Meshes[i].Name = meshes[i].name;
         m_LastID.mesh += 1;
     }
     
