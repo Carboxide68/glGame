@@ -28,7 +28,7 @@ public:
 
     void update();
 
-    Material Material;
+    Material material;
     std::string Name;
 
 private:

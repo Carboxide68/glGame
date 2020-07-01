@@ -43,12 +43,25 @@ char path[64] = "";
 
 std::deque<float> fps_history;
 
+inline void HelpMarker(const char* desc) {
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(desc);
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
+
+
 void ModelsWindow() {
 
     ImGui::Begin("Models");
 
     for (uint i = 0; i < (uint)models.size(); i++) {
-        char tmp[32]; sprintf(tmp, "Model %d", i);
+        char tmp[64]; sprintf(tmp, "Model %d", i);
         if (ImGui::TreeNode(tmp)) {
             ImGui::Text("Path: %s", paths[i].c_str());
             if (ImGui::SliderFloat("Scale", &scales[i], 0.0f, 5.0f, "%.4f")) {
@@ -61,12 +74,31 @@ void ModelsWindow() {
                 modelMatrices[i][3][1] = positions[i][1];
                 modelMatrices[i][3][2] = positions[i][2];
             }
+            if ( ImGui::TreeNode("Groups")) {
+                for (uint x = 0; x < models[i].Groups.size(); x++) {
+                    if (ImGui::TreeNode(models[i].Groups[x].Name.c_str())) {
+                        ImGui::Bullet(); ImGui::ColorEdit3("Ambient", glm::value_ptr(models[i].Groups[x].material.ambient));
+                        ImGui::Bullet(); ImGui::ColorEdit3("Diffuse", glm::value_ptr(models[i].Groups[x].material.diffuse));
+                        ImGui::Bullet(); ImGui::ColorEdit3("Specular", glm::value_ptr(models[i].Groups[x].material.specular));
+                        int tmpint = models[i].Groups[x].material.illum;
+                        ImGui::Bullet(); if (ImGui::InputInt("Illumination model", &tmpint, 1, 1)) {
+                            models[i].Groups[x].material.illum = tmpint;
+                        }
+                        ImGui::Bullet(); ImGui::InputFloat("Specular exponent", &models[i].Groups[x].material.specE, 1.0f, 5.0f, "%.1f");
+                        ImGui::Bullet(); ImGui::InputFloat("Opacity", &models[i].Groups[x].material.opacity, 1.0f, 5.0f, "%.3f");
+                        ImGui::Bullet(); ImGui::InputFloat("Optical density", &models[i].Groups[x].material.opticalDensity, 1.0f, 5.0f, "%.3f");
+                        ImGui::TreePop();
+                    }
+                }
+                ImGui::TreePop();
+            }
             ImGui::TreePop();
         }
     }
 
     ImGui::Separator();
     ImGui::InputText("Source path", path, 64, ImGuiInputTextFlags_CharsNoBlank);
+    ImGui::SameLine(); HelpMarker("Source is relative to the models/ folder!");
     if (ImGui::Button("Add source")) {
         paths.push_back(std::string(path));
         models.push_back(Model());

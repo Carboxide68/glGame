@@ -286,7 +286,7 @@ bool Model::LoadMTL(const std::vector<std::string> &materialLibs) {
         if (myFile.is_open()) {
             for (std::getline(myFile, line); myFile.good(); std::getline(myFile, line)) {
                 if (line.find("newmtl") != std::string::npos) {
-                    Groups[y].Material = tempMat;
+                    Groups[y].material = tempMat;
                     tempMat = {};
                     y++;
                     Groups.push_back(*this);

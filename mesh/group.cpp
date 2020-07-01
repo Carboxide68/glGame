@@ -3,7 +3,7 @@
 
 
 Group::Group(Model &parent) :  m_ParentModel(parent) {
-    Material = EMPTY_MATERIAL;
+    material = EMPTY_MATERIAL;
 }
 
 
@@ -13,7 +13,7 @@ Group::Group(Model &parent, std::vector<Polygon> polygons) : m_ParentModel(paren
         m_Polygons[i] = &polygons[i];
     }
 
-    Material = EMPTY_MATERIAL;
+    material = EMPTY_MATERIAL;
 
 }
 
@@ -30,13 +30,13 @@ void Group::addPolygons(std::vector<Polygon*> &polygons) {
 
 void Group::bindMaterial(Shader shader) {
     
-    shader.setUniform("material.ambient", Material.ambient);
-    shader.setUniform("material.diffuse", Material.diffuse);
-    shader.setUniform("material.specular", Material.specular);
-    shader.setUniform("material.illum", Material.illum);
-    shader.setUniform("material.specE", Material.specE);
-    shader.setUniform("material.opacity", Material.opacity);
-    shader.setUniform("material.opticalDensity", Material.opticalDensity);
+    shader.setUniform("material.ambient", material.ambient);
+    shader.setUniform("material.diffuse", material.diffuse);
+    shader.setUniform("material.specular", material.specular);
+    shader.setUniform("material.illum", material.illum);
+    shader.setUniform("material.specE", material.specE);
+    shader.setUniform("material.opacity", material.opacity);
+    shader.setUniform("material.opticalDensity", material.opticalDensity);
     //Implement binding of textures
 }
 
