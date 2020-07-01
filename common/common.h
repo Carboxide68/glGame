@@ -3,8 +3,8 @@
 #include <signal.h>
 #include <vector>
 #include <array>
-#include "../includes/glew.h"
-#include "../includes/glfw3.h"
+#include <glew.h>
+#include <glfw3.h>
 #include <stdio.h>
 #include <sstream>
 #include <fstream>
