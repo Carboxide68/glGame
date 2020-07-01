@@ -11,7 +11,7 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
-#define FPS_HISTORY_SIZE 45
+#define FPS_HISTORY_SIZE 2000
 
 /* Declaring callbacks */
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -34,7 +34,53 @@ bool state = false;
 Camera player;
 glm::vec3 movement;
 
+std::vector<glm::mat4> modelMatrices;
+std::vector<Model> models;
+std::vector<float> scales;
+std::vector<std::array<float, 3>> positions;
+std::vector<std::string> paths;
+char path[64] = "";
+
 std::deque<float> fps_history;
+
+void ModelsWindow() {
+
+    ImGui::Begin("Models");
+
+    for (uint i = 0; i < (uint)models.size(); i++) {
+        char tmp[32]; sprintf(tmp, "Model %d", i);
+        if (ImGui::TreeNode(tmp)) {
+            ImGui::Text("Path: %s", paths[i].c_str());
+            if (ImGui::SliderFloat("Scale", &scales[i], 0.0f, 5.0f, "%.4f")) {
+                modelMatrices[i][0][0] = scales[i];
+                modelMatrices[i][1][1] = scales[i];
+                modelMatrices[i][2][2] = scales[i];
+            }
+            if (ImGui::InputFloat3("Position", positions[i].data(), 3)) {
+                modelMatrices[i][3][0] = positions[i][0];
+                modelMatrices[i][3][1] = positions[i][1];
+                modelMatrices[i][3][2] = positions[i][2];
+            }
+            ImGui::TreePop();
+        }
+    }
+
+    ImGui::Separator();
+    ImGui::InputText("Source path", path, 64, ImGuiInputTextFlags_CharsNoBlank);
+    if (ImGui::Button("Add source")) {
+        paths.push_back(std::string(path));
+        models.push_back(Model());
+        models.back().loadModel("models/" + std::string(path));
+        models.back().loadToBuffer();
+        modelMatrices.push_back(glm::mat4(1));
+        scales.push_back(1.0f);
+        positions.push_back({0.0f, 0.0f, 0.0f});
+        memset(path, 0, 64);
+    }
+
+    ImGui::End();
+
+}
 
 int main(void) {
 
@@ -96,10 +142,6 @@ int main(void) {
         "misc/skybox/back.jpg"
     });
 
-    Model myModel = Model();
-    myModel.loadModel("models/SciFi/Corridor.obj");
-    myModel.loadToBuffer();
-
     Shader shader = Shader("shader/meshShader.vert", "shader/meshShader.frag");
 
     player = Camera(glm::vec3(-3.0f, -3.0f, -3.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -113,15 +155,6 @@ int main(void) {
     double lastFrame = glfwGetTime();
     double currentFrame;
     double deltaTime;
-    glm::mat4 modelMatrix = glm::mat4(1);
-    modelMatrix[3][0] = 5.0f;
-    modelMatrix[3][1] = 5.0f;
-    modelMatrix[3][2] = 5.0f;
-    modelMatrix[0][0] = 0.01f;
-    modelMatrix[1][1] = 0.01f;
-    modelMatrix[2][2] = 0.01f;
-
-    float scale = modelMatrix[0][0];
     glm::mat4 matrix;
 
     IMGUI_CHECKVERSION();
@@ -143,6 +176,18 @@ int main(void) {
     ImFont *font1 = io.Fonts->AddFontDefault();
     ImFont *font2 = io.Fonts->AddFontDefault();
     font2->Scale = 1.5f;
+
+    paths.push_back("SciFi/Corridor.obj");
+    models.push_back(Model());
+    models.back().loadModel("models/SciFi/Corridor.obj");
+    models.back().loadToBuffer();
+    modelMatrices.push_back(glm::mat4(1.0f));
+    scales.push_back(0.009f);
+    positions.push_back({0.0f, 0.0f, 0.0f});
+
+    modelMatrices[0][0][0] = scales[0];
+    modelMatrices[0][1][1] = scales[0];
+    modelMatrices[0][2][2] = scales[0];
 
     // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     /* Loop until the user closes the window */
@@ -182,10 +227,13 @@ int main(void) {
         shader.setUniform("playerPos", player.getPosition());
         shader.setUniform("light.position", lightPos);
         shader.setUniform("light.color", glm::vec3(1.0f, 1.0f, 1.0f));
-        shader.setUniform("assembledMatrix", player.getPerspectiveMatrix() * player.getViewMatrix() * modelMatrix);
-        shader.setUniform("model", modelMatrix);
-        myModel.draw(shader);
-                
+        shader.setUniform("ambient", glm::vec3(0.1f));
+        for (uint z = 0; z < models.size(); z++) {
+            shader.setUniform("assembledMatrix", player.getPerspectiveMatrix() * player.getViewMatrix() * modelMatrices[z]);
+            shader.setUniform("model", modelMatrices[z]);
+            models[z].draw(shader);
+        }
+        
         GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, 0));
 
         mySky.draw(player);
@@ -217,14 +265,8 @@ int main(void) {
         }
         ImGui::Text("MouseX: %f, MouseY: %f", lastXPos, lastYPos);
         ImGui::InputFloat("Movementspeed", &movementspeed, 0.01, 0.1, "%.3f");
-        ImGui::InputFloat2("Min, Max", interval);
-        if (ImGui::SliderFloat("Scale", &scale, interval[0], interval[1], "%.4f")) {
-            modelMatrix[0][0] = scale;
-            modelMatrix[1][1] = scale;
-            modelMatrix[2][2] = scale;
-        }
-
         ImGui::End();
+
         ImGui::PushFont(font2);
         ImGui::Begin("Controls");
         ImGui::Text("Escape: Exit Program");
@@ -233,6 +275,9 @@ int main(void) {
         ImGui::Text("WASDQE: Forward, Left, Backward, Right, Down, Up");
         ImGui::End();
         ImGui::PopFont();
+
+        ModelsWindow();
+        ImGui::ShowDemoWindow();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

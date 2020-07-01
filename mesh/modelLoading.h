@@ -116,8 +116,8 @@ glm::vec3 readVertex(const std::string line) { //v
     const size_t lineSize = line.size();
     std::array<std::string, 3> stringVertex;
     glm::vec3 vertex;
-    int i = 0;
-    for (; i < lineSize; i++) {
+    uint i = 0;
+    for (; i < (uint)lineSize; i++) {
         if (vertexFilter[line[i]]) continue;
         break;
     }
@@ -139,8 +139,8 @@ glm::vec2 readTexCoord(const std::string line) { //vt
     const size_t lineSize = line.size();
     std::array<std::string, 2> stringTexCoords;
     glm::vec2 texCoords;
-    int i = 0;
-    for (; i < lineSize; i++) {
+    uint i = 0;
+    for (; i < (uint)lineSize; i++) {
         if (texFilter[line[i]]) continue;
         break;
     }
@@ -160,14 +160,14 @@ glm::vec3 readNormal(const std::string line) { //vn
     const size_t lineSize = line.size();
     std::array<std::string, 3> stringNormal;
     glm::vec3 normal;
-    int i = 0;
-    for (; i < lineSize; i++) {
+    uint i = 0;
+    for (; i < (uint)lineSize; i++) {
         if (ifSeperator[line[i]] || normalFilter[line[i]]) continue;
         break;
     }
     for(int x = 0;x < 3;x++) {
         for (; line[i] == ' '; i++) continue;
-        for (;i < lineSize; i++) {
+        for (;i < (uint)lineSize; i++) {
             if (ifSeperator[line[i]]) break;
             stringNormal[x].push_back(line[i]);
         }
@@ -185,10 +185,10 @@ Face readFace(const std::string line) { //f
     std::vector<std::string> faceString;
     int i = 0;
     for (; i < lineSize && faceFilter[line[i]]; i++);
-    int x = 0;
+    uint x = 0;
     for(;i < lineSize;) {
         faceString.push_back("");
-        for (;i < lineSize; i++) {
+        for (;i < (uint)lineSize; i++) {
             if (ifSeperator[line[i]]) break;
             faceString[x].push_back(line[i]);
         }
@@ -201,25 +201,25 @@ Face readFace(const std::string line) { //f
     myFace.texCoord.resize(faceSize);
     myFace.vertex.resize(faceSize);
 
-    for (int x = 0; x < faceSize; x++) {
+    for (uint x = 0; x < (uint)faceSize; x++) {
         std::string tempS = "0";
         size_t faceSize = faceString[x].size();
         i = 0;
-        for (;i < faceSize; i++) {
+        for (;i < (uint)faceSize; i++) {
             if (faceString[x][i] == '/') break;
             tempS.push_back(faceString[x][i]);
         }
         myFace.vertex[x] = (tempS == "0") ? 0 : stoi(tempS) - 1;
         tempS = "0";
         i++;
-        for (;i < faceSize; i++) {
+        for (;i < (uint)faceSize; i++) {
             if (faceString[x][i] == '/') break;
             tempS.push_back(faceString[x][i]);
         }
         myFace.texCoord[x] = (tempS == "0") ? 0 : stoi(tempS) - 1;
         tempS = "0";
         i++;
-        for (;i < faceSize; i++) {
+        for (;i < (uint)faceSize; i++) {
             if (faceString[x][i] == '/') break;
             tempS.push_back(faceString[x][i]);
         }

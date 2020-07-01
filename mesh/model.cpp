@@ -278,11 +278,11 @@ bool Model::LoadMTL(const std::vector<std::string> &materialLibs) {
     std::ifstream myFile;
     m_Groups.push_back(Group(*this));
     m_Groups[0].setName("_CO_STANDARD");
-    for (int i = 0; i < materialLibs.size(); i++) {
+    for (int z = 0; z < materialLibs.size(); z++) {
         uint y = 0;
         line.clear();
         Material tempMat = EMPTY_MATERIAL;
-        myFile.open(materialLibs[i]);
+        myFile.open(materialLibs[z]);
         if (myFile.is_open()) {
             for (std::getline(myFile, line); myFile.good(); std::getline(myFile, line)) {
                 if (line.find("newmtl") != std::string::npos) {
@@ -312,7 +312,8 @@ bool Model::LoadMTL(const std::vector<std::string> &materialLibs) {
 
                 } else {
                     auto i = line.begin();
-                    for (;*i == ' ' || *i == '\t'; i++) continue;
+                    for (;i != line.end();) {if (!(*i == ' ' || *i == '\t')) break; i++;}
+                    if (i == line.end()) continue;
                     switch (*i)
                     {
                     
@@ -380,12 +381,12 @@ bool Model::LoadMTL(const std::vector<std::string> &materialLibs) {
                 std::cout << "Successfully loaded materials!" << std::endl;
                 myFile.close();
             } else {
-                std::cout << "Failed to read material file " << materialLibs[i] << "! Error: " << myFile.rdstate() << std::endl;
+                std::cout << "Failed to read material file " << materialLibs[z] << "! Error: " << myFile.rdstate() << std::endl;
                 myFile.close();
                 return false;
             }
         } else {
-            std::cout << "Failed to open file the file " << materialLibs[i] << "!" << std::endl;
+            std::cout << "Failed to open file the file " << materialLibs[z] << "!" << std::endl;
             return false;
         }
     }
