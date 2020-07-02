@@ -57,11 +57,3 @@ $(buildDir)%.o: shader/%.cpp
 
 clean:
 	rm -f build/*.o main debug || true
-
-loading: loading.cpp mesh/mesh.cpp mesh/triangle.cpp mesh/node.cpp common/common.cpp glObjects/ibo.cpp glObjects/vao.cpp glObjects/vbo.cpp camera/camera.cpp
-	g++ -g -o loading loading.cpp mesh/mesh.cpp mesh/triangle.cpp mesh/node.cpp common/common.cpp glObjects/ibo.cpp\
-	glObjects/vao.cpp glObjects/vbo.cpp camera/camera.cpp -lGL -lGLU -lGLEW -lglfw
-
-test: test.cpp common/common.cpp mesh/group.cpp mesh/mesh.cpp mesh/model.cpp mesh/polygon.cpp
-	g++ -o test test.cpp common/common.cpp mesh/group.cpp mesh/mesh.cpp mesh/model.cpp mesh/polygon.cpp -std=c++17 \
-	-g -lGL -lGLU -lGLEW -lglfw
