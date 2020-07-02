@@ -194,13 +194,6 @@ int main(void) {
     // myLight.setResolution(2048, 2048);
 
     // myLight.updateShadowmap(newObject);
-
-    /* Initializing timer variables */
-    double lastFrame = glfwGetTime();
-    double currentFrame;
-    double deltaTime;
-    glm::mat4 matrix;
-
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -208,16 +201,13 @@ int main(void) {
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
-    float rotAmount = 0.00f;
-
     bool update = false;
 
     double frameTime = 0;
 
     glm::vec3 lightPos = glm::vec3(5.0f, 5.0f, 20.0f);
 
-    float interval[2] = {0.0f, 5.0f};
-    ImFont *font1 = io.Fonts->AddFontDefault();
+    io.Fonts->AddFontDefault();
     ImFont *font2 = io.Fonts->AddFontDefault();
     font2->Scale = 1.5f;
 
@@ -245,9 +235,6 @@ int main(void) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
         fps_history.push_back(io.Framerate);
         fps_history.pop_front();
 
@@ -283,7 +270,6 @@ int main(void) {
         mySky.draw(player);
         
         glm::vec3 looking = player.getLookingDir();
-        glm::vec3 position = player.getPosition();
         static float values[FPS_HISTORY_SIZE] = {};
         float average = 0;
 
@@ -325,8 +311,6 @@ int main(void) {
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        frameTime = glfwGetTime() - currentFrame;
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);

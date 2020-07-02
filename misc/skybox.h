@@ -12,7 +12,7 @@ public:
 
 private:
 
-    unsigned int loadCubemap(std::array<std::string, 6> faces);
+    int loadCubemap(std::array<std::string, 6> faces);
 
     Shader m_SkyboxShader = Shader("shader/skybox.vert", "shader/skybox.frag");
     unsigned int m_TextureID;

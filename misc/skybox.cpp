@@ -58,7 +58,6 @@ Skybox::Skybox(std::array<std::string, 6> cubeMap) {
 void Skybox::draw(Camera &cam) {
     glDepthMask(GL_FALSE);
     glDepthFunc(GL_LEQUAL);
-    glm::mat4 assembledMatrix = cam.getPerspectiveMatrix() * cam.getViewMatrix();
     m_SkyboxShader.use();
     m_SkyboxShader.setUniform("projection", cam.getPerspectiveMatrix());
     m_SkyboxShader.setUniform("view", glm::mat4(glm::mat3(cam.getViewMatrix())));
@@ -71,7 +70,7 @@ void Skybox::draw(Camera &cam) {
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
 
-unsigned int Skybox::loadCubemap(std::array<std::string, 6> faces) {
+int Skybox::loadCubemap(std::array<std::string, 6> faces) {
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
 
@@ -90,6 +89,7 @@ unsigned int Skybox::loadCubemap(std::array<std::string, 6> faces) {
         {
             std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
             stbi_image_free(data);
+            return 0;
         }
     }
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -97,4 +97,5 @@ unsigned int Skybox::loadCubemap(std::array<std::string, 6> faces) {
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    return 1;
 }
