@@ -9,7 +9,7 @@ Group::Group(Model &parent) :  m_ParentModel(parent) {
 
 Group::Group(Model &parent, std::vector<Polygon> polygons) : m_ParentModel(parent) {
     m_Polygons.reserve(polygons.size());
-    for (int i = 0; i < polygons.size(); i++) {
+    for (int i = 0; i < (int)polygons.size(); i++) {
         m_Polygons[i] = &polygons[i];
     }
 
@@ -19,7 +19,7 @@ Group::Group(Model &parent, std::vector<Polygon> polygons) : m_ParentModel(paren
 
 void Group::addPolygons(std::vector<Polygon> &polygons) {
     m_Polygons.reserve(polygons.size());
-    for (int i = 0; i < polygons.size(); i++) {
+    for (int i = 0; i < (int)polygons.size(); i++) {
         m_Polygons.push_back(&polygons[i]);
     }
 }
@@ -38,14 +38,6 @@ void Group::bindMaterial(Shader shader) {
     shader.setUniform("material.opacity", material.opacity);
     shader.setUniform("material.opticalDensity", material.opticalDensity);
     //Implement binding of textures
-}
-
-void Group::generateTextures() {
-    
-}
-
-uint Group::textureCount() const {
-    
 }
 
 void Group::UpdateIndices() {

@@ -36,7 +36,7 @@ bool Model::loadModel(std::string path) {
 
     LoadMTL(materialLibs);
 
-    for (int i = 0; i < meshes.size() - 1; i++) {
+    for (int i = 0; i < (int)meshes.size() - 1; i++) {
         std::vector<Face> meshFaces(faces.begin() + meshes[i].loc, faces.begin() + meshes[i + 1].loc);
 
         std::vector<uint> uniqueVertexIndices;
@@ -57,11 +57,11 @@ bool Model::loadModel(std::string path) {
         std::vector<std::vector<uint>> vertexIndices;
         std::vector<std::vector<uint>> texIndices;
         std::vector<std::vector<uint>> normalIndices;
-        for (int y = 0; y < meshFaces.size(); y++) {
+        for (int y = 0; y < (int)meshFaces.size(); y++) {
             vertexIndices.push_back({});
             texIndices.push_back({});
             normalIndices.push_back({});
-            for (int x = 0; x < meshFaces[y].vertex.size(); x++) {
+            for (int x = 0; x < (int)meshFaces[y].vertex.size(); x++) {
                 uint &vertexRef = uniqueVertexIndices[meshFaces[y].vertex[x]];
                 uint &normalRef = uniqueNormalIndices[meshFaces[y].normal[x]];
                 uint &texRef = uniqueTexIndices[meshFaces[y].texCoord[x]];
@@ -97,10 +97,10 @@ bool Model::loadModel(std::string path) {
     }
     
     std::map<std::string, Group*> groupMap;
-    for (int i = 0; i < Groups.size(); i++) {
+    for (int i = 0; i < (int)Groups.size(); i++) {
         groupMap[Groups[i].Name] = &Groups[i];
     }
-    for (int i = 0; i < usingMaterial.size() - 1; i++) {
+    for (int i = 0; i < (int)usingMaterial.size() - 1; i++) {
         auto start = polygons.begin() + usingMaterial[i].loc;
         auto end = polygons.begin() + usingMaterial[i + 1].loc;
         auto polygonList = std::vector<Polygon*>(start, end);
@@ -110,11 +110,11 @@ bool Model::loadModel(std::string path) {
         }
         group->addPolygons(polygonList);
     }
-    for (int i = 0; i < Meshes.size(); i++) {
+    for (int i = 0; i < (int)Meshes.size(); i++) {
         Meshes[i].update();
     }
     update();
-    for (int i = 0; i < Groups.size(); i++) {
+    for (int i = 0; i < (int)Groups.size(); i++) {
         Groups[i].update();
     }
     return true;
@@ -123,11 +123,11 @@ bool Model::loadModel(std::string path) {
 void Model::draw(Shader shader) { //Assumes a shader is bound
     GLCall(glBindVertexArray(m_VertexArrayID));
     uint drawPos = 0;
-    for (int i = 0; i < Groups.size(); i++) {
+    for (int i = 0; i < (int)Groups.size(); i++) {
         uint temp = Groups[i].indexCount();
         if (temp != 0) {
             Groups[i].bindMaterial(shader);
-            GLCall(glDrawElements(GL_TRIANGLES, temp, GL_UNSIGNED_INT, (void *)drawPos));
+            GLCall(glDrawElements(GL_TRIANGLES, temp, GL_UNSIGNED_INT, (void *)(intptr_t)drawPos));
             drawPos += temp * sizeof(uint);
             G_triangles += temp/3;
         }
@@ -149,7 +149,7 @@ void Model::UpdateMeshMap() {
     m_MeshMap.reserve(Meshes.size() + 1);
     m_MeshMap.push_back(0);
     uint tot = 0;
-    for (int i = 0; i < Meshes.size(); i++) {
+    for (int i = 0; i < (int)Meshes.size(); i++) {
         tot += Meshes[i].m_PolygonMap.back();
         m_MeshMap.push_back(tot);
     }
@@ -161,7 +161,7 @@ void Model::loadToBuffer() {
     std::vector<StandardVertex> vertices;
     vertices.clear();
     std::vector<uint> indices;
-    for (int i = 0; i < Groups.size(); i++) {
+    for (int i = 0; i < (int)Groups.size(); i++) {
         Groups[i].update();
         auto temp = Groups[i].getIndices();
         indices.insert(indices.end(), temp.begin(), temp.end());
@@ -169,7 +169,7 @@ void Model::loadToBuffer() {
     GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ElementBufferID));
     printf("Allocating %luB of GPU memory!\n", indices.size() * sizeof(uint));
     GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint), (void*)indices.data(), GL_STATIC_DRAW));
-    for (int i = 0; i < Meshes.size(); i++) {
+    for (int i = 0; i < (int)Meshes.size(); i++) {
         auto temp = Meshes[i].getStandardVertices();
         vertices.insert(vertices.end(), temp.begin(), temp.end());
     }
@@ -235,14 +235,14 @@ bool Model::LoadOBJ(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &no
                         }
                         break;
                     case 'g':
-                        meshes.push_back({readMeshName(line), faces.size()});
+                        meshes.push_back({readMeshName(line), (uint)faces.size()});
                         break;
                     case 'f':
                         faces.push_back(readFace(line));
                         break;
                     case 's':
                         if (readSmoothingGroup(line)) {
-                            meshes.push_back({meshes.back().name + "S", faces.size()});
+                            meshes.push_back({meshes.back().name + "S", (uint) faces.size()});
                         }
                         break;
 
@@ -254,7 +254,7 @@ bool Model::LoadOBJ(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &no
 
                     case 'u':
                         if (line.find("usemtl") != std::string::npos) {
-                            usingMaterial.push_back({readMaterial(line), faces.size()});
+                            usingMaterial.push_back({readMaterial(line), (uint)faces.size()});
                         }
                         break;
 
@@ -286,8 +286,9 @@ bool Model::LoadOBJ(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &no
         texCoords.push_back({glm::vec2(0)});
     }
 
-    meshes.push_back({"placeholder", faces.size()}); //Last element in faces
-    usingMaterial.push_back({"placeholder", faces.size()}); //Last element in faces
+    meshes.push_back({"placeholder", (uint)faces.size()}); //Last element in faces
+    usingMaterial.push_back({"placeholder", (uint)faces.size()}); //Last element in faces
+    return true;
 }
 
 bool Model::LoadMTL(const std::vector<std::string> &materialLibs) {
@@ -296,7 +297,7 @@ bool Model::LoadMTL(const std::vector<std::string> &materialLibs) {
     std::ifstream myFile;
     Groups.push_back(Group(*this));
     Groups[0].Name = "_CO_STANDARD";
-    for (int z = 0; z < materialLibs.size(); z++) {
+    for (int z = 0; z < (int)materialLibs.size(); z++) {
         uint y = 0;
         line.clear();
         Material tempMat = EMPTY_MATERIAL;

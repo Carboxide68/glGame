@@ -2,7 +2,11 @@ CC = g++
 
 debugFlags = 
 
-flags = -std=c++17 -g
+mainFlags = -std=c++17 -O2
+
+debugflags = -std=c++17 -g
+
+flags = 
 
 libs = -Llib -lGL -lGLU -lGLEW -lglfw3 -lrt -lm -ldl -lX11 -lpthread -lxcb -lXau -lXdmcp
 
@@ -19,9 +23,11 @@ additionalFiles += mesh/model.cpp mesh/group.cpp
 
 objFiles = $(addprefix ${buildDir}, $(notdir $(additionalFiles:%.cpp=$(buildDir)%.o)))
 
+main: flags = $(mainFlags)
 main: main.cpp $(objFiles)
 	$(CC) -o $@ $< $(includes) $(objFiles) $(flags) $(libs)
 
+debug: flags = $(debugFlags)
 debug: main.cpp $(objFiles)
 	$(CC) -o $@ $< $(includes) $(objFiles) $(debugFlags) $(flags) $(libs)
 

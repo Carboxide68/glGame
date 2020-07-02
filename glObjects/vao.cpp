@@ -28,7 +28,7 @@ void VertexArray::addAttrib(GLenum type, unsigned int count) {
 
         GLCall(glEnableVertexAttribArray(i));
         
-        GLCall(glVertexAttribPointer(i, m_ArrayLayout[i].count, m_ArrayLayout[i].type, GL_FALSE, stride, (void *) offset));
+        GLCall(glVertexAttribPointer(i, m_ArrayLayout[i].count, m_ArrayLayout[i].type, GL_FALSE, stride, (void *)(intptr_t)offset));
 
         offset += m_ArrayLayout[i].count * getSizeOfType(m_ArrayLayout[i].type);
 

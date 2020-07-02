@@ -9,12 +9,12 @@ Polygon::Polygon(ModelID id, std::vector<glm::vec3> &pos, std::vector<glm::vec2>
     m_FallBackTexCoord = glm::vec2(0);
 
     m_Pos.resize(pos.size());
-    for (int i = 0; i < pos.size(); i++) {
+    for (int i = 0; i < (int)pos.size(); i++) {
         m_Pos[i] = &pos[i];
     }
     size_t texSize = texCoords.size();
     m_TexCoords.resize(texSize);
-    for (int i = 0; i < texSize; i++) {
+    for (int i = 0; i < (int)texSize; i++) {
         m_TexCoords[i] = &texCoords[i];
     }
 
@@ -33,12 +33,12 @@ Polygon::Polygon(ModelID id, std::vector<glm::vec3*> &pos, std::vector<glm::vec2
     m_FallBackTexCoord = glm::vec2(0);
 
     m_Pos.resize(pos.size());
-    for (int i = 0; i < pos.size(); i++) {
+    for (int i = 0; i < (int)pos.size(); i++) {
         m_Pos[i] = pos[i];
     }
     size_t texSize = texCoords.size();
     m_TexCoords.resize(texSize);
-    for (int i = 0; i < texSize; i++) {
+    for (int i = 0; i < (int)texSize; i++) {
         m_TexCoords[i] = texCoords[i];
     }
 
@@ -54,7 +54,7 @@ void Polygon::generateNormal(bool force) {
         return;
     }
     if (!HasNormal || force || m_Normals[0].length() < 0.9f) {
-        for (int i = 0; i < m_Normals.size(); i++) {
+        for (int i = 0; i < (int)m_Normals.size(); i++) {
             m_Normals[i] = glm::normalize(glm::cross(*m_Pos[1] - *m_Pos[0], *m_Pos[2] - *m_Pos[0]));
         }
     }
@@ -82,7 +82,7 @@ std::vector<StandardVertex> Polygon::getStandardVertices() const {
 
     float usingTex = (m_TexCoords.size() < positionsSize) ? 0.0f : 1.0f;
     uint usingNorm = (m_Normals.size() == positionsSize) ? 1 : 0;
-    for (int i = 0; i < positionsSize; i++) {
+    for (int i = 0; i < (int)positionsSize; i++) {
         vertices.push_back({*m_Pos[i], m_Normals[i * usingNorm], *m_TexCoords[i * usingTex]});
     }
     return vertices;
@@ -96,7 +96,7 @@ std::vector<uint> Polygon::assembleIndices() {
         return {};
     }
 
-    for (int i = 2; i < m_Pos.size(); i++) {
+    for (int i = 2; i < (int)m_Pos.size(); i++) {
         indices.push_back(0);
         indices.push_back(i - 1);
         indices.push_back(i);
@@ -113,7 +113,7 @@ std::vector<Triangle> Polygon::assembleTriangleMesh() {
     }
 
     float usingTex = (m_TexCoords.size() < 1) ? 0.0f : 1.0f;
-    for (int i = 2; i < m_Pos.size(); i++) {
+    for (int i = 2; i < (int)m_Pos.size(); i++) {
         triangles.push_back({
             *m_Pos[0],
             *m_TexCoords[0 * usingTex],
