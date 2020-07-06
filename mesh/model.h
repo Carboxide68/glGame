@@ -21,6 +21,10 @@ public:
 
     bool loadModel(std::string path);
 
+    Mesh& createMesh();
+
+    Group& createGroup();
+
     inline size_t getPolygonLocation(const ModelID id) const {
         uint meshId = GetMeshIndexFromID(id);
         return m_MeshMap[meshId] + Meshes[meshId].getPolygonLocation(id);
@@ -57,7 +61,7 @@ private:
 
     inline uint GetMeshIndexFromID(ModelID id) const {return id.mesh;};
 
-    inline ModelID GenerateID() {m_LastID.mesh += 1; return m_LastID;}
+    inline ModelID GenerateID() {return m_LastID; m_LastID.mesh += 1;}
 
     bool LoadOBJ(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &texCoords, std::vector<Face> &faces, 
         std::vector<gr> &meshes, std::vector<mat> &usingMaterial, std::vector<std::string> &materialLibs, std::string path);

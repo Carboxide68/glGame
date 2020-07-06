@@ -21,6 +21,20 @@ Model::~Model() {
     GLCall(glDeleteBuffers(1, &m_VertexBufferID));
 }
 
+Mesh& Model::createMesh() {
+
+    Meshes.push_back(Mesh(GenerateID(), std::vector<std::array<float, 3>>(), std::vector<std::array<float, 2>>()));
+    return Meshes.back();
+
+}
+
+Group& Model::createGroup() {
+
+    Groups.push_back(Group(*this));
+    return Groups.back();
+
+}
+
 bool Model::loadModel(std::string path) {
     std::vector<Polygon *> polygons;
     std::vector<glm::vec3> vertices;

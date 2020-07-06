@@ -3,28 +3,32 @@
 
 Mesh::Mesh(ModelID ID, std::vector<glm::vec3> positions, std::vector<glm::vec2> texCoords) {
     m_LastID = ID;
-    m_Vertices = positions;
-    m_TexCoords = texCoords;
+    vertices = positions;
+    if (texCoords.size() == positions.size()) {
+        this->texCoords = texCoords;
+    } else {
+        this->texCoords = {glm::vec2(0)};
+    }
 }
 
 Mesh::Mesh(ModelID ID, std::vector<std::array<float, 3>> positions, std::vector<std::array<float, 2>> texCoords) {
     m_LastID = ID;
     const size_t posSize = positions.size();
     for (int i = 0; i < (int)posSize; i++) {
-        m_Vertices.push_back({positions[i][0], positions[i][1], positions[i][1]});
+        this->vertices.push_back({positions[i][0], positions[i][1], positions[i][1]});
     }
     const size_t texSize = texCoords.size();
     for (int i = 0; i < (int)texSize; i++) {
-        m_TexCoords.push_back({texCoords[i][0], texCoords[i][1]});
+        this->texCoords.push_back({texCoords[i][0], texCoords[i][1]});
     }
-    if (texSize < 1) {
-        m_TexCoords.push_back({0, 0});
+    if (texSize == 0) {
+        this->texCoords = {glm::vec2(0)};
     }
 }
 
 std::vector<Polygon*> Mesh::createPolygons(std::vector<std::vector<uint>> positionIndices, std::vector<std::vector<uint>> texIndices, std::vector<std::vector<glm::vec3>> normals) {
     const size_t positionIndexSize1 = positionIndices.size();
-    uint texMult = (texIndices.size() < positionIndexSize1) ? 0.0f : 1.0f;
+    uint texMult = (texIndices.size() == positionIndexSize1) ? 1 : 0;
     m_Polygons.reserve(positionIndexSize1);
     auto polygonStart = m_Polygons.end() - m_Polygons.begin();
     
@@ -35,10 +39,12 @@ std::vector<Polygon*> Mesh::createPolygons(std::vector<std::vector<uint>> positi
         tempPositions.reserve(positionIndexSize);
         tempTexCoords.reserve(positionIndexSize);
         for (int x = 0; x < (int)positionIndexSize; x++) {
-            tempPositions.push_back(&m_Vertices[positionIndices[i][x]]);
-            tempTexCoords.push_back(&m_TexCoords[texIndices[i * texMult][x * texMult]]);
+            tempPositions.push_back(&vertices[positionIndices[i][x]]);
+            if (texMult) {
+                tempTexCoords.push_back(&texCoords[texIndices[i][x]]);
+            }
         }
-        if (normals[0][0] != glm::vec3(0)) {
+        if ((int)normals.size() != 0) {
             m_Polygons.push_back(Polygon(m_LastID, tempPositions, tempTexCoords, normals[i]));
         } else {
             m_Polygons.push_back(Polygon(m_LastID, tempPositions, tempTexCoords));
@@ -54,7 +60,7 @@ std::vector<Polygon*> Mesh::createPolygons(std::vector<std::vector<uint>> positi
 
 std::vector<Polygon*> Mesh::createPolygons(std::vector<std::vector<uint>> positionIndices, std::vector<std::vector<uint>> texIndices, std::vector<glm::vec3> normals, std::vector<std::vector<uint>> normalIndices) {
     const size_t positionIndexSize1 = positionIndices.size();
-    uint texMult = (texIndices.size() < positionIndexSize1) ? 0.0f : 1.0f;
+    uint texMult = (texIndices.size() < positionIndexSize1) ? 0 : 1;
     m_Polygons.reserve(positionIndexSize1);
     auto polygonStart = m_Polygons.end() - m_Polygons.begin();
     
@@ -67,8 +73,10 @@ std::vector<Polygon*> Mesh::createPolygons(std::vector<std::vector<uint>> positi
         tempTexCoords.reserve(positionIndexSize);
         tempNormals.reserve(positionIndexSize);
         for (int x = 0; x < (int)positionIndexSize; x++) {
-            tempPositions.push_back(&m_Vertices[positionIndices[i][x]]);
-            tempTexCoords.push_back(&m_TexCoords[texIndices[i * texMult][x * texMult]]);
+            tempPositions.push_back(&vertices[positionIndices[i][x]]);
+            if (texMult) {
+                tempTexCoords.push_back(&texCoords[texIndices[i][x]]);
+            }
             tempNormals.push_back(normals[normalIndices[i][x]]);
         }
         m_Polygons.push_back(Polygon(m_LastID, tempPositions, tempTexCoords, tempNormals));
@@ -82,12 +90,12 @@ std::vector<Polygon*> Mesh::createPolygons(std::vector<std::vector<uint>> positi
 }
 
 std::vector<StandardVertex> Mesh::getStandardVertices() const {
-    std::vector<StandardVertex> vertices;
+    std::vector<StandardVertex> standardVertices;
     for (int i = 0; i < (int)m_Polygons.size(); i++) {
         std::vector<StandardVertex> tempVertices = m_Polygons[i].getStandardVertices();
-        vertices.insert(vertices.end(), tempVertices.begin(), tempVertices.end());
+        standardVertices.insert(standardVertices.end(), tempVertices.begin(), tempVertices.end());
     }
-    return vertices;
+    return standardVertices;
 }
 
 void Mesh::UpdatePolygonMap() {
@@ -101,14 +109,14 @@ void Mesh::UpdatePolygonMap() {
     }
 }
 
-void Mesh::UpdatePolygonNormals() {
+void Mesh::UpdatePolygonNormals(bool force) {
     const size_t polygonSize = m_Polygons.size();
     for (int i = 0; i < (int)polygonSize; i++) {
-        m_Polygons[i].generateNormal();
+        m_Polygons[i].generateNormal(force);
     }
 }
 
-void Mesh::update() {
+void Mesh::update(bool force) {
     UpdatePolygonMap();
-    UpdatePolygonNormals();
+    UpdatePolygonNormals(force);
 }

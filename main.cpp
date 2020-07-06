@@ -10,6 +10,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
+#include "terrain/marchingCubes/marchingCubes.h"
 #include <memory>
 
 #define FPS_HISTORY_SIZE 2000
@@ -221,13 +222,15 @@ int main(void) {
     ImFont *font2 = io.Fonts->AddFontDefault();
     font2->Scale = 1.5f;
 
-    paths.push_back(std::unique_ptr<std::string>(new std::string("SciFi/Corridor.obj")));
-    models.push_back(std::unique_ptr<Model>(new Model()));
-    models.back()->loadModel("models/SciFi/Corridor.obj");
-    models.back()->loadToBuffer();
+    MarchingCubes mc;
+    mc.LoadChunk(glm::vec3(1.0f, 0.0f, 0.0f));
+
+    paths.push_back(std::unique_ptr<std::string>(new std::string("")));
+    models.push_back(std::unique_ptr<Model>(&mc.GetModelReference()));
     modelMatrices.push_back(std::unique_ptr<glm::mat4>(new glm::mat4(1.0f)));
     scales.push_back(std::unique_ptr<float>(new float(0.009f)));
     positions.push_back(std::unique_ptr<std::array<float, 3>>(new std::array<float, 3>{0.0f, 0.0f, 0.0f}));
+
 
     (*modelMatrices[0])[0][0] = *scales[0];
     (*modelMatrices[0])[1][1] = *scales[0];
@@ -267,6 +270,12 @@ int main(void) {
         }
         GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, 0));
 
+        shader.use();
+        shader.setUniform("playerPos", player.getPosition());
+        shader.setUniform("light.position", lightPos);
+        shader.setUniform("light.color", glm::vec3(1.0f, 1.0f, 1.0f));
+        shader.setUniform("ambient", glm::vec3(0.1f));
+        
         shader.use();
         shader.setUniform("playerPos", player.getPosition());
         shader.setUniform("light.position", lightPos);

@@ -27,16 +27,19 @@ public:
     }
 
     Polygon* createPolygon(std::vector<uint> positionIndex, std::vector<uint> texIndex);
-    std::vector<Polygon*> createPolygons(std::vector<std::vector<uint>> positionIndices, std::vector<std::vector<uint>> texIndices, std::vector<std::vector<glm::vec3>> normals = {{glm::vec3(0)}});
+    std::vector<Polygon*> createPolygons(std::vector<std::vector<uint>> positionIndices, std::vector<std::vector<uint>> texIndices = std::vector<std::vector<uint>>(), std::vector<std::vector<glm::vec3>> normals = std::vector<std::vector<glm::vec3>>());
     std::vector<Polygon*> createPolygons(std::vector<std::vector<uint>> positionIndices, std::vector<std::vector<uint>> texIndices, std::vector<glm::vec3> normals, std::vector<std::vector<uint>> normalIndices);
 
     inline const std::vector<uint>& getPolygonMap() const {return m_PolygonMap;}
 
-    void update();
+    void update(bool force = false);
 
     std::string Name;
 
     friend class Model;
+
+    std::vector<glm::vec3> vertices; //Vertex data is stored on a per-mesh basis
+    std::vector<glm::vec2> texCoords;
 
 private:
 
@@ -44,17 +47,15 @@ private:
     //in the object and want to load the changes into the GPU buffer;  If the GPU buffer and the MeshMap are not synched, this may 
     //lead to problems.
     void UpdatePolygonMap();
-    void UpdatePolygonNormals();
+    void UpdatePolygonNormals(bool force);
 
     inline uint GetPolygonIndexFromID(ModelID id) const {return id.polygon;}
 
-    inline ModelID GenerateID() {m_LastID.polygon += 1; return m_LastID;}
+    inline ModelID GenerateID() {return m_LastID; m_LastID.polygon += 1;}
 
     std::vector<Polygon> m_Polygons;
     std::vector<uint> m_PolygonMap; //Index N is index (N - 1) + PolygonTriangleCount
 
-    std::vector<glm::vec3> m_Vertices; //Vertex data is stored on a per-mesh basis
-    std::vector<glm::vec2> m_TexCoords;
 
     ModelID m_LastID;
 };
