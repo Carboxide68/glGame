@@ -32,7 +32,7 @@ $(buildDir)%.o: common/%.cpp
 	$(CC) $(flags) $(includes) -c $< -o $@
 
 $(buildDir)%.o: camera/%.cpp
-	$(CC) $(flags)  $(includes) -c $< -o $@
+	$(CC) $(flags) $(includes) -c $< -o $@
 
 $(buildDir)%.o: glObjects/%.cpp
 	$(CC) $(flags) $(includes) -c $< -o $@

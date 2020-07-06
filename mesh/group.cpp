@@ -2,30 +2,25 @@
 #include "model.h"
 
 
-Group::Group(Model &parent) :  m_ParentModel(parent) {
+Group::Group(Model &parent) : m_ParentModel(parent) {
     material = EMPTY_MATERIAL;
+    char temp[32];
+    sprintf(temp, "Group %d", (int)parent.Groups.size());
+    m_Name = temp;
 }
 
-
-Group::Group(Model &parent, std::vector<Polygon> polygons) : m_ParentModel(parent) {
-    m_Polygons.reserve(polygons.size());
-    for (int i = 0; i < (int)polygons.size(); i++) {
-        m_Polygons[i] = &polygons[i];
+void Group::setName(std::string name, bool update) {
+    if (update) {
+        for (int i = 0; i < (int)m_ParentModel.Meshes.size(); i++) {
+            std::vector<std::pair<std::string, uint>> groupMap = m_ParentModel.Meshes[i].getGroupMap();
+            for (int j = 1; j < (int)groupMap.size() - 1; j++) {
+                if (groupMap[j].first == m_Name) {
+                    groupMap[j].first = name;
+                }
+            }
+        }
     }
-
-    material = EMPTY_MATERIAL;
-
-}
-
-void Group::addPolygons(std::vector<Polygon> &polygons) {
-    m_Polygons.reserve(polygons.size());
-    for (int i = 0; i < (int)polygons.size(); i++) {
-        m_Polygons.push_back(&polygons[i]);
-    }
-}
-
-void Group::addPolygons(std::vector<Polygon*> &polygons) {
-    m_Polygons.insert(m_Polygons.end(), polygons.begin(), polygons.end());
+    m_Name = name;
 }
 
 void Group::bindMaterial(Shader shader) {
@@ -45,13 +40,23 @@ void Group::UpdateIndices() {
     size_t polygonLoc;
     m_Indices.clear();
 
-    for (uint i = 0; i < m_Polygons.size(); i++) {
-        polygonLoc = m_ParentModel.getPolygonLocation(m_Polygons[i]->ID);
-        std::vector<uint> tempIndices = m_Polygons[i]->assembleIndices();
-        for (auto index = tempIndices.begin(); index != tempIndices.end(); index++) {
-            m_Indices.push_back(polygonLoc + *(index));
+    for (int i = 0; i < (int)m_ParentModel.Meshes.size(); i++) {
+        std::vector<std::pair<std::string, uint>> groupMap = m_ParentModel.Meshes[i].getGroupMap();
+        for (int j = 0; j < (int)groupMap.size() - 1; j++) {
+            if (groupMap[j].first == m_Name) {
+                uint begin = groupMap[j].second;
+                uint end = groupMap[j + 1].second;
+                for (int k = begin; k < end; k++) {
+                    std::vector<uint> tempIndices = m_ParentModel.Meshes[i].Polygons[k].assembleIndices();
+                    polygonLoc = m_ParentModel.Meshes[i].getPolygonLocation(m_ParentModel.Meshes[i].Polygons[k].ID);
+                    for (auto index = tempIndices.begin(); index != tempIndices.end(); index++) {
+                        m_Indices.push_back(polygonLoc + *(index));
+                    }
+                }
+            }
         }
     }
+    return;
 }
 
 void Group::update() {
