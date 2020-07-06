@@ -78,7 +78,7 @@ void ModelsWindow() {
             }
             if ( ImGui::TreeNode("Groups")) {
                 for (uint x = 0; x < models[i]->Groups.size(); x++) {
-                    if (ImGui::TreeNode(models[i]->Groups[x].Name.c_str())) {
+                    if (ImGui::TreeNode(models[i]->Groups[x].getName().c_str())) {
                         ImGui::Bullet(); ImGui::ColorEdit3("Ambient", glm::value_ptr(models[i]->Groups[x].material.ambient));
                         ImGui::Bullet(); ImGui::ColorEdit3("Diffuse", glm::value_ptr(models[i]->Groups[x].material.diffuse));
                         ImGui::Bullet(); ImGui::ColorEdit3("Specular", glm::value_ptr(models[i]->Groups[x].material.specular));

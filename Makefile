@@ -1,11 +1,5 @@
 CC = g++
 
-debugFlags = 
-
-mainFlags = -std=c++17 -O2
-
-debugflags = -std=c++17 -g
-
 flags = 
 
 libs = -Llib -lGL -lGLU -lGLEW -lglfw3 -lrt -lm -ldl -lX11 -lpthread -lxcb -lXau -lXdmcp
@@ -23,11 +17,11 @@ additionalFiles += mesh/model.cpp mesh/group.cpp
 
 objFiles = $(addprefix ${buildDir}, $(notdir $(additionalFiles:%.cpp=$(buildDir)%.o)))
 
-main: flags = $(mainFlags)
+main: flags = -std=c++17 -O2
 main: main.cpp $(objFiles)
 	$(CC) -o $@ $< $(includes) $(objFiles) $(flags) $(libs)
 
-debug: flags = $(debugFlags)
+debug: flags = -std=c++17 -g -Wall
 debug: main.cpp $(objFiles)
 	$(CC) -o $@ $< $(includes) $(objFiles) $(debugFlags) $(flags) $(libs)
 
@@ -38,7 +32,7 @@ $(buildDir)%.o: common/%.cpp
 	$(CC) $(flags) $(includes) -c $< -o $@
 
 $(buildDir)%.o: camera/%.cpp
-	$(CC) $(flags)  $(includes) -c $< -o $@
+	$(CC) $(flags) $(includes) -c $< -o $@
 
 $(buildDir)%.o: glObjects/%.cpp
 	$(CC) $(flags) $(includes) -c $< -o $@

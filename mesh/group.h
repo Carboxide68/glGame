@@ -11,14 +11,11 @@ class Group {
 public:
 
     Group(Model &parent);
-    Group(Model &parent, std::vector<Polygon> polygons);
+
+    void setName(std::string name, bool update = true);
+    inline const std::string& getName() const {return m_Name;};
 
     inline const std::vector<uint>& getIndices() const {return m_Indices;}
-
-    inline void addPolygon(Polygon polygon) {m_Polygons.push_back(&polygon);};
-    inline void addPolygon(Polygon* polygon) {m_Polygons.push_back(polygon);};
-    void addPolygons(std::vector<Polygon> &polygons);
-    void addPolygons(std::vector<Polygon*> &polygons);
 
     void bindMaterial(Shader shader);
     void generateTextures();
@@ -29,16 +26,15 @@ public:
     void update();
 
     Material material;
-    std::string Name;
 
 private:
 
+    std::string m_Name;
 
     void UpdateIndices();
 
     Model &m_ParentModel;
 
-    std::vector<Polygon*> m_Polygons;
     std::vector<uint> m_Indices; //Internally stored indices for omptimized assembling
 
     std::array<uint, 8> m_MaterialProperties;
