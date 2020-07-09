@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <vector>
 #include <array>
+#include <memory>
 #include <glew.h>
 #include <glfw3.h>
 #include <stdio.h>
@@ -32,6 +33,8 @@ std::string matrixToString(glm::mat4 matrix);
 std::string matrixToString(glm::mat3 matrix);
 
 std::string loadFile(std::string fileSource);
+
+static const std::string STANDARD_NAME = "_CO_STANDARD";
 
 template <typename T>
 struct ErrWithData {

@@ -10,14 +10,14 @@ class Model;
 class Group {
 public:
 
-    Group(Model &parent);
+    Group(Model *parent);
 
     void setName(std::string name, bool update = true);
     inline const std::string& getName() const {return m_Name;};
 
     inline const std::vector<uint>& getIndices() const {return m_Indices;}
 
-    void bindMaterial(Shader shader);
+    void bindMaterial(Shader *shader);
     void generateTextures();
 
     uint textureCount() const;
@@ -26,6 +26,8 @@ public:
     void update();
 
     Material material;
+    
+    friend class Model;
 
 private:
 
@@ -33,7 +35,7 @@ private:
 
     void UpdateIndices();
 
-    Model &m_ParentModel;
+    Model *m_ParentModel;
 
     std::vector<uint> m_Indices; //Internally stored indices for omptimized assembling
 

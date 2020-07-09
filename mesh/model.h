@@ -20,13 +20,9 @@ public:
     Mesh& createMesh();
     Group& createGroup();
 
-    void draw(Shader shader);
+    void draw(Shader *shader);
 
     bool loadModel(std::string path);
-
-    Mesh& createMesh();
-
-    Group& createGroup();
 
     inline size_t getPolygonLocation(const ModelID id) const {
         uint meshId = GetMeshIndexFromID(id);
@@ -45,7 +41,7 @@ public:
     std::vector<Mesh> Meshes; //The meshes used in the model
     std::vector<Group> Groups;//The groups used in the model
 
-    inline ModelID generateID() {auto temp = m_LastID;m_LastID.mesh += 1;return temp;}
+    inline ModelID generateID() {auto temp = m_LastID; m_LastID.mesh += 1; return temp;}
 
 private:
 

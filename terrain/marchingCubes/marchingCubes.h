@@ -20,7 +20,6 @@ private:
 
     glm::vec3 interpolateVerts(glm::vec4 v1, glm::vec4 v2);
 
-    Model m_Model;
     PerlinNoise m_Noise;
 
     uint m_ChunkSize;
@@ -39,16 +38,17 @@ public:
     MarchingCubes();
 
     void LoadChunk(glm::vec3 chunkPos);
+    void LoadChunks(const std::vector<glm::vec3>& chunkPos);
 
     void Draw(Camera camera, Shader *shader = nullptr);
 
-    inline Model& GetModelReference() {return m_Model;}
+    inline std::shared_ptr<Model> GetModelReference() {return m_Model;}
 
 private:
 
     MeshGenerator m_MeshGenerator;
 
-    Model m_Model;
+    std::shared_ptr<Model> m_Model;
     Shader m_Shader;
 
     size_t m_DrawCount;

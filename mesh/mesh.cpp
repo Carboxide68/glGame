@@ -3,10 +3,15 @@
 
 Mesh::Mesh(ModelID ID) {
     this->ID = ID;
+    Enabled = true;
     char temp[32];
     sprintf(temp, "Mesh %d", (int)ID.mesh);
     Name = temp;
-    m_GroupMap.push_back({"_CO_STANDARD", 0});
+    m_GroupMap = {};
+    m_PolygonMap = {};
+    Polygons = {};
+    Vertices = {};
+    TexCoords = {};
 }
 
 void Mesh::loadData(std::vector<glm::vec3> positions, std::vector<glm::vec2> texCoords) {
@@ -39,9 +44,11 @@ std::vector<Polygon*> Mesh::createPolygons(std::vector<std::vector<uint>> positi
         tempTexCoords.reserve(positionIndexSize);
         for (int x = 0; x < (int)positionIndexSize; x++) {
             tempPositions.push_back(&Vertices[positionIndices[i][x]]);
-            tempTexCoords.push_back(&TexCoords[texIndices[i * texMult][x * texMult]]);
+            if (texMult) {
+                tempTexCoords.push_back(&TexCoords[texIndices[i * texMult][x * texMult]]);
+            }
         }
-        if (normals[0][0] != glm::vec3(0)) {
+        if ((int)normals.size() != 0) {
             Polygons.push_back(Polygon(GenerateID(), tempPositions, tempTexCoords, normals[i]));
         } else {
             Polygons.push_back(Polygon(GenerateID(), tempPositions, tempTexCoords));
@@ -84,10 +91,10 @@ std::vector<Polygon*> Mesh::createPolygons(std::vector<std::vector<uint>> positi
 
 void Mesh::addGroup(std::string groupName, uint begin, uint end) {
 
-    std::vector<std::pair<std::string, uint>> tmp = {{groupName, begin}, {"_CO_STANDARD", end}};
+    std::vector<Groupspan> tmp = {{std::shared_ptr<std::string>(new std::string(groupName)), begin, end}};
 
-    for (int i = 0; i < m_GroupMap.size(); i++) {
-        if (m_GroupMap[i].second > begin) {
+    for (int i = 0; i < (const int)m_GroupMap.size(); i++) {
+        if (m_GroupMap[i].begin > begin) {
             m_GroupMap.insert(m_GroupMap.begin() + i - 1, tmp.begin(), tmp.end());
             return;
         }
@@ -96,7 +103,39 @@ void Mesh::addGroup(std::string groupName, uint begin, uint end) {
 }
 
 void Mesh::addGroup(std::string groupName) {
-    m_GroupMap = {{"_CO_STANDARD", 0}, {groupName, 0}, {"_CO_STANDARD", Polygons.size()}};
+    m_GroupMap = {{std::shared_ptr<std::string>(new std::string(groupName)), 0, (uint)Polygons.size()}};
+}
+
+std::vector<Mesh::Groupspan> Mesh::getGroup(std::string name) {
+    std::vector<Groupspan> group;
+    if (name == STANDARD_NAME) {
+        const size_t temp = m_GroupMap.size();
+        if (temp == 0) {
+            return {{std::make_shared<std::string>(STANDARD_NAME), 0, (uint)Polygons.size()}};
+        }
+        for (int i = 0; i < (int)temp; i++) {
+            if (i == 0) {
+                if (0 != m_GroupMap[i].begin) {
+                    group.push_back({std::make_shared<std::string>(STANDARD_NAME), 0, m_GroupMap[0].begin});
+                }
+            }
+            else if (i == (int)(temp - 1)) {
+                if ((uint)Polygons.size() != m_GroupMap[i].end) {
+                    group.push_back({std::make_shared<std::string>(STANDARD_NAME), m_GroupMap[i].end, (uint)Polygons.size()});
+                }
+            }
+            else if (m_GroupMap[i].end != m_GroupMap[i+1].begin) {
+                group.push_back({std::make_shared<std::string>(STANDARD_NAME), m_GroupMap[i].end, m_GroupMap[i+1].begin});
+            }
+        }
+    } else {
+        for (int i = 0; i < (const int)m_GroupMap.size(); i++) {
+            if (*(m_GroupMap[i].name) == name) {
+                group.push_back(m_GroupMap[i]);
+            }
+        }
+    }
+    return group;
 }
 
 std::vector<StandardVertex> Mesh::getStandardVertices() const {
@@ -108,7 +147,7 @@ std::vector<StandardVertex> Mesh::getStandardVertices() const {
     return vertices;
 }
 
-void Mesh::UpdatePolygonMap() {
+void Mesh::updatePolygonMap() {
     const size_t polygonSize = Polygons.size();
     m_PolygonMap.reserve(polygonSize + 1);
     m_PolygonMap.push_back(0); //First index will be zero, second will be after the first is done etc
@@ -119,26 +158,14 @@ void Mesh::UpdatePolygonMap() {
     }
 }
 
-void Mesh::UpdatePolygonNormals() {
+void Mesh::updatePolygonNormals(bool force) {
     const size_t polygonSize = Polygons.size();
     for (int i = 0; i < (int)polygonSize; i++) {
-        Polygons[i].generateNormal();
+        Polygons[i].generateNormal(force);
     }
 }
 
-void Mesh::UpdateGroupMap() {
-
-    if (m_GroupMap.size() == 1) {
-        m_GroupMap.push_back({"_CO_STANDARD", Polygons.size()});
-    } else if (m_GroupMap.back().first == "_CO_STANDARD") {
-        m_GroupMap.back().second = Polygons.size();
-    } else {
-        m_GroupMap.push_back({"_CO_STANDARD", Polygons.size()});
-    }
-}
-
-void Mesh::update(bool force) {
-    UpdatePolygonMap();
-    UpdatePolygonNormals();
-    UpdateGroupMap();
+void Mesh::update() {
+    updatePolygonMap();
+    updatePolygonNormals();
 }

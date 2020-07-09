@@ -6,7 +6,7 @@
 #include "glObjects/vao.h"
 #include "glObjects/vbo.h"
 #include "misc/skybox.h"
-// #include "shader/pointlight.h"
+#include "shader/pointlight.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
@@ -36,11 +36,11 @@ bool state = false;
 Camera player;
 glm::vec3 movement;
 
-std::vector<std::unique_ptr<glm::mat4>> modelMatrices;
-std::vector<std::unique_ptr<Model>> models;
-std::vector<std::unique_ptr<float>> scales;
-std::vector<std::unique_ptr<std::array<float, 3>>> positions;
-std::vector<std::unique_ptr<std::string>> paths;
+std::vector<std::shared_ptr<glm::mat4>> modelMatrices;
+std::vector<std::shared_ptr<Model>> models;
+std::vector<std::shared_ptr<float>> scales;
+std::vector<std::shared_ptr<std::array<float, 3>>> positions;
+std::vector<std::shared_ptr<std::string>> paths;
 char path[64] = "";
 
 std::deque<float> fps_history;
@@ -66,6 +66,10 @@ void ModelsWindow() {
     for (uint i = 0; i < (uint)models.size(); i++) {
         char tmp[64]; sprintf(tmp, "Model %d", i);
         if (ImGui::TreeNode(tmp)) {
+            if (ImGui::Button("Update")) {
+                models[i]->update();
+                models[i]->loadToBuffer();
+            }
             ImGui::Text("Path: %s", paths[i]->c_str());
             if (ImGui::SliderFloat("Scale", scales[i].get(), 0.0f, 5.0f, "%.4f")) {
                 (*modelMatrices[i])[0][0] = *scales[i];
@@ -77,7 +81,8 @@ void ModelsWindow() {
                 (*modelMatrices[i])[3][1] = (*positions[i])[1];
                 (*modelMatrices[i])[3][2] = (*positions[i])[2];
             }
-            if ( ImGui::TreeNode("Groups")) {
+            sprintf(tmp, "Groups - %d", (int)models[i]->Groups.size());
+            if ( ImGui::TreeNode(tmp)) {
                 for (uint x = 0; x < models[i]->Groups.size(); x++) {
                     if (ImGui::TreeNode(models[i]->Groups[x].getName().c_str())) {
                         ImGui::Bullet(); ImGui::ColorEdit3("Ambient", glm::value_ptr(models[i]->Groups[x].material.ambient));
@@ -90,6 +95,23 @@ void ModelsWindow() {
                         ImGui::Bullet(); ImGui::InputFloat("Specular exponent", &models[i]->Groups[x].material.specE, 1.0f, 5.0f, "%.1f");
                         ImGui::Bullet(); ImGui::InputFloat("Opacity", &models[i]->Groups[x].material.opacity, 1.0f, 5.0f, "%.3f");
                         ImGui::Bullet(); ImGui::InputFloat("Optical density", &models[i]->Groups[x].material.opticalDensity, 1.0f, 5.0f, "%.3f");
+                        ImGui::TreePop();
+                    }
+                }
+                ImGui::TreePop();
+            }
+            sprintf(tmp, "Meshes - %d", (int)models[i]->Meshes.size());
+            if (ImGui::TreeNode(tmp)) {
+                for (int j = 0; j < models[i]->Meshes.size(); j++) {
+                    if (ImGui::TreeNode(models[i]->Meshes[j].Name.c_str())) {
+                        ImGui::Text("Polygon count: %d", (int)models[i]->Meshes[j].Polygons.size());
+                        ImGui::Text("Vertices: %d", (int)models[i]->Meshes[j].Vertices.size());
+                        if (ImGui::Checkbox("Enabled", &models[i]->Meshes[j].Enabled)) {
+                            models[i]->loadToBuffer();
+                        };
+                        if(ImGui::Button("Force calculate normals")) {
+                            models[i]->Meshes[j].updatePolygonNormals(true);
+                        }
                         ImGui::TreePop();
                     }
                 }
@@ -113,13 +135,13 @@ void ModelsWindow() {
     ImGui::InputText("Source path", path, 64, ImGuiInputTextFlags_CharsNoBlank);
     ImGui::SameLine(); HelpMarker("Source is relative to the 'models' folder");
     if (ImGui::Button("Add source")) {
-        paths.push_back(std::unique_ptr<std::string>(new std::string(path)));
-        models.push_back(std::unique_ptr<Model>(new Model()));
+        paths.push_back(std::make_shared<std::string>(std::string(path)));
+        models.push_back(std::make_shared<Model>(Model()));
         models.back()->loadModel("models/" + std::string(path));
         models.back()->loadToBuffer();
-        modelMatrices.push_back(std::unique_ptr<glm::mat4>(new glm::mat4(1)));
-        scales.push_back(std::unique_ptr<float>(new float(1)));
-        positions.push_back(std::unique_ptr<std::array<float, 3>>(new std::array<float, 3>{0.0f, 0.0f, 0.0f}));
+        modelMatrices.push_back(std::make_shared<glm::mat4>(glm::mat4(1)));
+        scales.push_back(std::make_shared<float>(float(1)));
+        positions.push_back(std::make_shared<std::array<float, 3>>(std::array<float, 3>{0.0f, 0.0f, 0.0f}));
         memset(path, 0, 64);
     }
 
@@ -187,14 +209,14 @@ int main(void) {
         "misc/skybox/back.jpg"
     });
 
-    Shader shader = Shader("shader/meshShader.vert", "shader/meshShader.frag");
+    Shader shader = Shader("shader/meshShadowShader.vert", "shader/meshShadowShader.frag");
 
     player = Camera(glm::vec3(-3.0f, -3.0f, -3.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     player.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
 
-    // myLight.setResolution(2048, 2048);
-
-    // myLight.updateShadowmap(newObject);
+    PointLight myLight;
+    myLight.setResolution(2048, 2048);
+    myLight.setColor(glm::vec3(1));
 
     /* Initializing timer variables */
     double lastFrame = glfwGetTime();
@@ -223,10 +245,19 @@ int main(void) {
     font2->Scale = 1.5f;
 
     MarchingCubes mc;
-    mc.LoadChunk(glm::vec3(1.0f, 0.0f, 0.0f));
+    glm::vec3 chunk = glm::vec3(0);
+    std::vector<glm::vec3> chunks;
+    for (int x = -3; x < 3; x++) {
+        for (int y = -3; y < 3; y++) {
+            for (int z = -3; z < 3; z++) {
+                chunks.push_back(glm::vec3(x, y, z));
+            }
+        }
+    }
+    mc.LoadChunks(chunks);
 
     paths.push_back(std::unique_ptr<std::string>(new std::string("")));
-    models.push_back(std::unique_ptr<Model>(&mc.GetModelReference()));
+    models.push_back(mc.GetModelReference());
     modelMatrices.push_back(std::unique_ptr<glm::mat4>(new glm::mat4(1.0f)));
     scales.push_back(std::unique_ptr<float>(new float(0.009f)));
     positions.push_back(std::unique_ptr<std::array<float, 3>>(new std::array<float, 3>{0.0f, 0.0f, 0.0f}));
@@ -238,6 +269,10 @@ int main(void) {
 
     // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     /* Loop until the user closes the window */
+
+    glm::mat4 marchingMatrix = glm::mat4(1);
+    glm::vec3 marchingPosition = glm::vec3(0);
+
     while (!glfwWindowShouldClose(window)) {
 
         glfwPollEvents();
@@ -270,23 +305,27 @@ int main(void) {
         }
         GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, 0));
 
+        // shader.use();
+        // shader.setUniform("playerPos", player.getPosition());
+        // shader.setUniform("light.position", player.getPosition());
+        // shader.setUniform("light.color", glm::vec3(1.0f, 1.0f, 1.0f));
+        // shader.setUniform("ambient", glm::vec3(0.1f));
+        // shader.setUniform("assembledMatrix", player.getPerspectiveMatrix() * player.getViewMatrix() * marchingMatrix);
+        // shader.setUniform("model", marchingMatrix);
+        // mc.Draw(player, &shader);
+
         shader.use();
-        shader.setUniform("playerPos", player.getPosition());
-        shader.setUniform("light.position", lightPos);
-        shader.setUniform("light.color", glm::vec3(1.0f, 1.0f, 1.0f));
+        myLight.lightUniform(&shader);
         shader.setUniform("ambient", glm::vec3(0.1f));
-        
-        shader.use();
+        shader.setUniform("shadows", shadows);
+        shader.setUniform("diskRadius", diskRadius);
+        shader.setUniform("bias", bias);
         shader.setUniform("playerPos", player.getPosition());
-        shader.setUniform("light.position", lightPos);
-        shader.setUniform("light.color", glm::vec3(1.0f, 1.0f, 1.0f));
-        shader.setUniform("ambient", glm::vec3(0.1f));
         for (uint z = 0; z < models.size(); z++) {
             shader.setUniform("assembledMatrix", player.getPerspectiveMatrix() * player.getViewMatrix() * (*modelMatrices[z]));
             shader.setUniform("model", *modelMatrices[z]);
-            models[z]->draw(shader);
+            models[z]->draw(&shader);
         }
-        
         GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, 0));
 
         mySky.draw(player);
@@ -312,12 +351,39 @@ int main(void) {
         ImGui::Text("Frame time: %f", frameTime);
         ImGui::Text("Looking direction: %f, %f, %f", looking.x, looking.y, looking.z);
         ImGui::InputFloat3("Position", player.getPositionValuePtr());
-        ImGui::InputFloat3("Light position", glm::value_ptr(lightPos));
+        ImGui::InputFloat3("Light position", glm::value_ptr(*myLight.getPositionReference()));
         if (ImGui::Button("Light to location")) {
-            lightPos = player.getPosition();
+            myLight.setPosition(player.getPosition());
         }
+        if (ImGui::Button("Update shadowmap")) {
+            Shader& s = myLight.BeginShadowMap();
+            for (uint z = 0; z < models.size(); z++) {
+                s.setUniform("model", *modelMatrices[z]);
+                models[z]->draw(&s);
+            }
+            myLight.EndShadowmap();
+        }
+        ImGui::Checkbox("Shadows", &shadows);
+        ImGui::InputFloat("Disk Radius", &diskRadius);
+        ImGui::InputFloat("Bias", &bias);
         ImGui::Text("MouseX: %f, MouseY: %f", lastXPos, lastYPos);
         ImGui::InputFloat("Movementspeed", &movementspeed, 0.01, 0.1, "%.3f");
+        ImGui::End();
+
+        ImGui::Begin("Marching Cubes");
+        ImGui::InputFloat3("Chunk", glm::value_ptr(chunk), "%.0f");
+        if (ImGui::Button("Load")) {
+            mc.LoadChunk(chunk);
+        }
+        if (ImGui::SliderFloat("Scale", &marchingMatrix[0][0], 0.0f, 5.0f, "%.4f")) {
+            marchingMatrix[1][1] = marchingMatrix[0][0];
+            marchingMatrix[2][2] = marchingMatrix[0][0];
+        }
+        if (ImGui::InputFloat3("Position", glm::value_ptr(marchingPosition), 3)) {
+            marchingMatrix[3][0] = marchingPosition[0];
+            marchingMatrix[3][1] = marchingPosition[1];
+            marchingMatrix[3][2] = marchingPosition[2];
+        }
         ImGui::End();
 
         ImGui::PushFont(font2);
