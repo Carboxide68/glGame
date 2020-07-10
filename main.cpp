@@ -10,7 +10,6 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
-#include "terrain/marchingCubes/marchingCubes.h"
 #include <memory>
 
 #define FPS_HISTORY_SIZE 2000
@@ -20,8 +19,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_pos_callback(GLFWwindow* window, double xPos, double yPos);
 
-bool cursorMode = true;
-bool shadows = true;
+bool cursorMode = false;
+bool shadows = false;
 
 float bias = 0.15f;
 float diskRadius = 0.05f;
@@ -44,6 +43,19 @@ std::vector<std::shared_ptr<std::string>> paths;
 char path[64] = "";
 
 std::deque<float> fps_history;
+
+std::array<float, 2> HiLo(std::vector<float> vector) {
+    std::array<float, 2> array = {INFINITY, 0};
+    for (auto it = vector.begin(); it != vector.end(); it++) {
+        if (*it < array[0]) {
+            array[0] = *it;
+        }
+        if (*it > array[1]) {
+            array[1] = *it;
+        }
+    }
+    return array;
+}
 
 inline void HelpMarker(const char* desc) {
     ImGui::TextDisabled("(?)");
@@ -240,24 +252,14 @@ int main(void) {
     glm::vec3 lightPos = glm::vec3(5.0f, 5.0f, 20.0f);
 
     float interval[2] = {0.0f, 5.0f};
-    ImFont *font1 = io.Fonts->AddFontDefault();
+    io.Fonts->AddFontDefault();
     ImFont *font2 = io.Fonts->AddFontDefault();
     font2->Scale = 1.5f;
 
-    MarchingCubes mc;
-    glm::vec3 chunk = glm::vec3(0);
-    std::vector<glm::vec3> chunks;
-    for (int x = -3; x < 3; x++) {
-        for (int y = -3; y < 3; y++) {
-            for (int z = -3; z < 3; z++) {
-                chunks.push_back(glm::vec3(x, y, z));
-            }
-        }
-    }
-    mc.LoadChunks(chunks);
-
-    paths.push_back(std::unique_ptr<std::string>(new std::string("")));
-    models.push_back(mc.GetModelReference());
+    paths.push_back(std::unique_ptr<std::string>(new std::string("SciFi/Corridor.obj")));
+    models.push_back(std::make_shared<Model>(Model()));
+    models.back()->loadModel("models/SciFi/Corridor.obj");
+    models.back()->loadToBuffer();
     modelMatrices.push_back(std::unique_ptr<glm::mat4>(new glm::mat4(1.0f)));
     scales.push_back(std::unique_ptr<float>(new float(0.009f)));
     positions.push_back(std::unique_ptr<std::array<float, 3>>(new std::array<float, 3>{0.0f, 0.0f, 0.0f}));
@@ -269,9 +271,6 @@ int main(void) {
 
     // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     /* Loop until the user closes the window */
-
-    glm::mat4 marchingMatrix = glm::mat4(1);
-    glm::vec3 marchingPosition = glm::vec3(0);
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -349,6 +348,8 @@ int main(void) {
         ImGui::Text("Triangles: %d", G_triangles);
         ImGui::PlotLines("", values, IM_ARRAYSIZE(values), 0, overlay, 0.0f, 100.0f, ImVec2(240,60));
         ImGui::Text("Frame time: %f", frameTime);
+        std::array<float, 2> highestandlowest = HiLo(std::vector<float>(fps_history.begin(), fps_history.end()));
+        ImGui::Text("High: %.3f ms| Low: %.3f ms", 1000.0f/highestandlowest[1], 1000.0f/highestandlowest[0]);
         ImGui::Text("Looking direction: %f, %f, %f", looking.x, looking.y, looking.z);
         ImGui::InputFloat3("Position", player.getPositionValuePtr());
         ImGui::InputFloat3("Light position", glm::value_ptr(*myLight.getPositionReference()));
@@ -364,26 +365,10 @@ int main(void) {
             myLight.EndShadowmap();
         }
         ImGui::Checkbox("Shadows", &shadows);
-        ImGui::InputFloat("Disk Radius", &diskRadius);
-        ImGui::InputFloat("Bias", &bias);
+        ImGui::InputFloat("Disk Radius", &diskRadius, 0.01f, 0.1f, "%.3f");
+        ImGui::InputFloat("Bias", &bias, 0.01f, 0.1f, "%.3f");
         ImGui::Text("MouseX: %f, MouseY: %f", lastXPos, lastYPos);
         ImGui::InputFloat("Movementspeed", &movementspeed, 0.01, 0.1, "%.3f");
-        ImGui::End();
-
-        ImGui::Begin("Marching Cubes");
-        ImGui::InputFloat3("Chunk", glm::value_ptr(chunk), "%.0f");
-        if (ImGui::Button("Load")) {
-            mc.LoadChunk(chunk);
-        }
-        if (ImGui::SliderFloat("Scale", &marchingMatrix[0][0], 0.0f, 5.0f, "%.4f")) {
-            marchingMatrix[1][1] = marchingMatrix[0][0];
-            marchingMatrix[2][2] = marchingMatrix[0][0];
-        }
-        if (ImGui::InputFloat3("Position", glm::value_ptr(marchingPosition), 3)) {
-            marchingMatrix[3][0] = marchingPosition[0];
-            marchingMatrix[3][1] = marchingPosition[1];
-            marchingMatrix[3][2] = marchingPosition[2];
-        }
         ImGui::End();
 
         ImGui::PushFont(font2);
@@ -396,7 +381,6 @@ int main(void) {
         ImGui::PopFont();
 
         ModelsWindow();
-        ImGui::ShowDemoWindow();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
