@@ -3,6 +3,7 @@
 #include "fstream"
 #include "modelLoading.h"
 #include <map>
+#include <unordered_set>
 #include <algorithm>
 
 Model::Model() {
@@ -12,13 +13,29 @@ Model::Model() {
     GLCall(glBindVertexArray(m_VertexArrayID));
     GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ElementBufferID));
     GLCall(glBindVertexArray(0));
-    m_LastID.ID = 0;
+    m_LastID.mesh = 0;
+    m_LastID.polygon = 0;
+
+    createGroup().setName(STANDARD_NAME, false);
+    createMesh().Name = STANDARD_NAME;
 }
 
 Model::~Model() {
     GLCall(glDeleteVertexArrays(1, &m_VertexArrayID));
     GLCall(glDeleteBuffers(1, &m_ElementBufferID));
     GLCall(glDeleteBuffers(1, &m_VertexBufferID));
+}
+
+Mesh& Model::createMesh() {
+
+    Meshes.push_back(Mesh(generateID()));
+    return Meshes.back();
+
+}
+
+Group& Model::createGroup() {
+    Groups.push_back(Group(this));
+    return Groups.back();
 }
 
 bool Model::loadModel(std::string path) {
@@ -35,6 +52,51 @@ bool Model::loadModel(std::string path) {
     LoadOBJ(vertices, normals, texCoords, faces, meshes, usingMaterial, materialLibs, path);
 
     LoadMTL(materialLibs);
+
+    std::unordered_set<std::string> tmpGroupSet;
+
+    for (int i = 0; i < (int)Groups.size(); i++) {
+        tmpGroupSet.insert(Groups[i].getName());
+    }
+
+    for (int i = 1; i < (int)usingMaterial.size() - 1; i++) {
+        if (tmpGroupSet.find(usingMaterial[i].name) == tmpGroupSet.end()) {
+            Group& tmp = createGroup();
+            tmp.setName(usingMaterial[i].name, false);
+            tmpGroupSet.insert(usingMaterial[i].name);
+        }
+    }
+
+    std::vector<std::vector<Mesh::Groupspan>> matPerMesh(meshes.size() - 1);
+
+    for (int i = 0; i < (const int)meshes.size() - 1; i++) {
+        uint begin = meshes[i].loc;
+        uint end = meshes[i + 1].loc;
+        int j = 0;
+        for (; j < (const int)usingMaterial.size() - 1; j++) {
+            if (usingMaterial[j].loc > begin) {
+                if (usingMaterial[j].loc > end) {
+                    matPerMesh[i] = {{std::shared_ptr<std::string>(new std::string(usingMaterial[j - 1].name)), 0, end - begin}};
+                } else {
+                    matPerMesh[i].push_back({std::shared_ptr<std::string>(new std::string(usingMaterial[j - 1].name)), 0, usingMaterial[j].loc - begin});
+                }
+                break;
+            }
+        }
+        if (j == (int)(usingMaterial.size() - 1)) {
+            matPerMesh[i] = {{std::shared_ptr<std::string>(new std::string(usingMaterial[j - 1].name)), 0, end - begin}};
+            continue;
+        }
+        if (matPerMesh[i][0].end == end - begin) continue;
+        j++;
+        for (;j < (int)usingMaterial.size(); j++) {
+            if (usingMaterial[j].loc > end) {
+                matPerMesh[i].push_back({std::shared_ptr<std::string>(new std::string(usingMaterial[j-1].name)), usingMaterial[j-1].loc - begin, end-begin});
+                break;
+            }
+            matPerMesh[i].push_back({std::shared_ptr<std::string>(new std::string(usingMaterial[j-1].name)), usingMaterial[j-1].loc - begin, usingMaterial[j].loc - begin});
+        }
+    }
 
     for (int i = 0; i < (int)meshes.size() - 1; i++) {
         std::vector<Face> meshFaces(faces.begin() + meshes[i].loc, faces.begin() + meshes[i + 1].loc);
@@ -88,39 +150,21 @@ bool Model::loadModel(std::string path) {
                 texIndices[y].push_back(texRef);
             }
         }
-
-        Meshes.push_back(Mesh(m_LastID, associatedVertices, associatedTexCoords));
-        auto tempPolygons = Meshes[i].createPolygons(vertexIndices, texIndices, associatedNormals, normalIndices);
+        Mesh& tempMesh = (i == 0) ? Meshes[0] : createMesh();
+        tempMesh.loadData(associatedVertices, associatedTexCoords);
+        auto tempPolygons = tempMesh.createPolygons(vertexIndices, texIndices, associatedNormals, normalIndices);
         polygons.insert(polygons.end(), tempPolygons.begin(), tempPolygons.end());
-        Meshes[i].Name = meshes[i].name;
-        m_LastID.mesh += 1;
-    }
-    
-    std::map<std::string, Group*> groupMap;
-    for (int i = 0; i < (int)Groups.size(); i++) {
-        groupMap[Groups[i].Name] = &Groups[i];
-    }
-    for (int i = 0; i < (int)usingMaterial.size() - 1; i++) {
-        auto start = polygons.begin() + usingMaterial[i].loc;
-        auto end = polygons.begin() + usingMaterial[i + 1].loc;
-        auto polygonList = std::vector<Polygon*>(start, end);
-        auto group = groupMap[usingMaterial[i].name];
-        if (group == 0) {
-            group = &Groups[0];
+        tempMesh.Name = meshes[i].name;
+        for (int j = 0; j < (int)matPerMesh[i].size(); j++) {
+            tempMesh.addGroup(*(matPerMesh[i][j].name), matPerMesh[i][j].begin, matPerMesh[i][j].end);
         }
-        group->addPolygons(polygonList);
     }
-    for (int i = 0; i < (int)Meshes.size(); i++) {
-        Meshes[i].update();
-    }
+
     update();
-    for (int i = 0; i < (int)Groups.size(); i++) {
-        Groups[i].update();
-    }
     return true;
 }
 
-void Model::draw(Shader shader) { //Assumes a shader is bound
+void Model::draw(Shader *shader) { //Assumes a shader is bound
     GLCall(glBindVertexArray(m_VertexArrayID));
     uint drawPos = 0;
     for (int i = 0; i < (int)Groups.size(); i++) {
@@ -137,15 +181,22 @@ void Model::draw(Shader shader) { //Assumes a shader is bound
 
 void Model::update() {
 
-    UpdateMeshMap();
-    
+    for (int i = 0; i < (int)Meshes.size(); i++) {
+        Meshes[i].update();
+    }
+    Update();
+    for (int i = 0; i < (int)Groups.size(); i++) {
+        Groups[i].m_ParentModel = this;
+        Groups[i].update();
+    }
 }
 
-void Model::optimizieMeshes() {
-    
+void Model::Update() {
+    UpdateMeshMap();
 }
 
 void Model::UpdateMeshMap() {
+    m_MeshMap.clear();
     m_MeshMap.reserve(Meshes.size() + 1);
     m_MeshMap.push_back(0);
     uint tot = 0;
@@ -156,13 +207,12 @@ void Model::UpdateMeshMap() {
 }
 
 void Model::loadToBuffer() {
+    update();
     unLoad();
     GLCall(glBindVertexArray(m_VertexArrayID));
     std::vector<StandardVertex> vertices;
-    vertices.clear();
     std::vector<uint> indices;
     for (int i = 0; i < (int)Groups.size(); i++) {
-        Groups[i].update();
         auto temp = Groups[i].getIndices();
         indices.insert(indices.end(), temp.begin(), temp.end());
     }
@@ -200,8 +250,8 @@ void Model::unLoad() {
 
 bool Model::LoadOBJ(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &texCoords,
         std::vector<Face> &faces, std::vector<gr> &meshes, std::vector<mat> &usingMaterial, std::vector<std::string> &materialLibs, std::string path) {
-    meshes.push_back({"_CO_STANDARD", 0});
-    usingMaterial.push_back({"_CO_STANDARD", 0});
+    meshes.push_back({STANDARD_NAME, 0});
+    usingMaterial.push_back({STANDARD_NAME, 0});
     std::string directoryPath;
     std::string tempString = "";
     for (auto i = path.begin(); i != path.end(); i++) {
@@ -295,8 +345,6 @@ bool Model::LoadMTL(const std::vector<std::string> &materialLibs) {
 
     std::string line;
     std::ifstream myFile;
-    Groups.push_back(Group(*this));
-    Groups[0].Name = "_CO_STANDARD";
     for (int z = 0; z < (int)materialLibs.size(); z++) {
         uint y = 0;
         line.clear();
@@ -308,8 +356,8 @@ bool Model::LoadMTL(const std::vector<std::string> &materialLibs) {
                     Groups[y].material = tempMat;
                     tempMat = {};
                     y++;
-                    Groups.push_back(*this);
-                    Groups[y].Name = readName("newmtl", line);
+                    Groups.push_back(this);
+                    Groups[y].setName(readName("newmtl", line), false);
                     continue;
                 } else if (line.find("illum") != std::string::npos) {
                     tempMat.illum = (uint)readFloat("illum", line);

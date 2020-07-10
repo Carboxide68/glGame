@@ -17,7 +17,10 @@ public:
     Model();
     ~Model();
 
-    void draw(Shader shader);
+    Mesh& createMesh();
+    Group& createGroup();
+
+    void draw(Shader *shader);
 
     bool loadModel(std::string path);
 
@@ -38,6 +41,8 @@ public:
     std::vector<Mesh> Meshes; //The meshes used in the model
     std::vector<Group> Groups;//The groups used in the model
 
+    inline ModelID generateID() {auto temp = m_LastID; m_LastID.mesh += 1; return temp;}
+
 private:
 
     struct gr {
@@ -57,12 +62,12 @@ private:
 
     inline uint GetMeshIndexFromID(ModelID id) const {return id.mesh;};
 
-    inline ModelID GenerateID() {m_LastID.mesh += 1; return m_LastID;}
-
     bool LoadOBJ(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &texCoords, std::vector<Face> &faces, 
         std::vector<gr> &meshes, std::vector<mat> &usingMaterial, std::vector<std::string> &materialLibs, std::string path);
 
     bool LoadMTL(const std::vector<std::string> &materialLibs);
+
+    void Update();
 
     uint m_VertexArrayID;
     uint m_VertexBufferID;

@@ -67,8 +67,8 @@ bool Polygon::CheckForErrors() const {
         return false;
     }
 
-    if (m_TexCoords.size() != 0 && m_TexCoords.size() != m_Pos.size()) {
-        printf("Texture Coordinates don't match specifications!");
+    if (m_TexCoords.size() != 1 && m_TexCoords.size() != m_Pos.size()) {
+        printf("Texture Coordinates don't match specifications!\n");
         return false;
     }
     return true;
@@ -77,15 +77,15 @@ bool Polygon::CheckForErrors() const {
 std::vector<StandardVertex> Polygon::getStandardVertices() const {
 
     const size_t positionsSize = m_Pos.size();
-    std::vector<StandardVertex> vertices;
-    vertices.reserve(positionsSize);
+    std::vector<StandardVertex> standardVertices;
+    standardVertices.reserve(positionsSize);
 
-    float usingTex = (m_TexCoords.size() < positionsSize) ? 0.0f : 1.0f;
+    uint usingTex = (m_TexCoords.size() == positionsSize) ? 1 : 0;
     uint usingNorm = (m_Normals.size() == positionsSize) ? 1 : 0;
     for (int i = 0; i < (int)positionsSize; i++) {
-        vertices.push_back({*m_Pos[i], m_Normals[i * usingNorm], *m_TexCoords[i * usingTex]});
+        standardVertices.push_back({*m_Pos[i], m_Normals[i * usingNorm], *m_TexCoords[i * usingTex]});
     }
-    return vertices;
+    return standardVertices;
 }
 
 std::vector<uint> Polygon::assembleIndices() {

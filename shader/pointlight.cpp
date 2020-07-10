@@ -55,33 +55,32 @@ void PointLight::setResolution(const uint shadow_width, const uint shadow_height
     m_SHADOW_WIDTH = shadow_width;
 }
 
-void PointLight::updateShadowmap() { //Implement Scene object
+Shader& PointLight::BeginShadowMap() { //Implement Scene object
 
     m_PrepareShadowmap();
 
-    int formerHeight, formerWidth;
     {
         GLint viewPortArgs[4];
         glGetIntegerv(GL_VIEWPORT, viewPortArgs);
-        formerWidth = viewPortArgs[2];
-        formerHeight = viewPortArgs[3];
+        m_FormerWidth = viewPortArgs[2];
+        m_FormerHeight = viewPortArgs[3];
     }
     GLCall(glViewport(0, 0, m_SHADOW_WIDTH, m_SHADOW_HEIGHT));
     GLCall(glBindFramebuffer(GL_FRAMEBUFFER, m_DepthMapFBO));
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    myMesh.setShader(m_PointShadowShader);
     m_PointShadowShader.use();
     m_PointShadowShader.setUniform("far_plane", far);
     m_PointShadowShader.setUniform("lightPos", m_LightInfo.position);
     for (int i = 0; i < 6; i++) {
         m_PointShadowShader.setUniform("shadowMatrices[" + std::to_string(i) + "]", m_ShadowTransforms[i]);
     }
-    myMesh.draw(m_LightCam);
+    return m_PointShadowShader;
+}
 
-    myMesh.resetShader();
+void PointLight::EndShadowmap() {
     GLCall(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-    GLCall(glViewport(0, 0, formerWidth, formerHeight));
+    GLCall(glViewport(0, 0, m_FormerWidth, m_FormerHeight));
 }
 
 void PointLight::m_PrepareShadowmap() {
@@ -93,19 +92,17 @@ void PointLight::m_PrepareShadowmap() {
 
     glm::mat4 shadowProj = m_LightCam.getPerspectiveMatrix();
 
-    m_ShadowTransforms.clear();
-
-    m_ShadowTransforms.push_back(shadowProj * 
+    m_ShadowTransforms[0] = (shadowProj * 
                  glm::lookAt(m_LightInfo.position, m_LightInfo.position + glm::vec3( 1.0, 0.0, 0.0), glm::vec3(0.0,-1.0, 0.0)));
-    m_ShadowTransforms.push_back(shadowProj * 
+    m_ShadowTransforms[1] = (shadowProj * 
                  glm::lookAt(m_LightInfo.position, m_LightInfo.position + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0,-1.0, 0.0)));
-    m_ShadowTransforms.push_back(shadowProj * 
+    m_ShadowTransforms[2] = (shadowProj * 
                  glm::lookAt(m_LightInfo.position, m_LightInfo.position + glm::vec3( 0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
-    m_ShadowTransforms.push_back(shadowProj * 
+    m_ShadowTransforms[3] = (shadowProj * 
                  glm::lookAt(m_LightInfo.position, m_LightInfo.position + glm::vec3( 0.0,-1.0, 0.0), glm::vec3(0.0, 0.0,-1.0)));
-    m_ShadowTransforms.push_back(shadowProj * 
+    m_ShadowTransforms[4] = (shadowProj * 
                  glm::lookAt(m_LightInfo.position, m_LightInfo.position + glm::vec3( 0.0, 0.0, 1.0), glm::vec3(0.0,-1.0, 0.0)));
-    m_ShadowTransforms.push_back(shadowProj * 
+    m_ShadowTransforms[5] = (shadowProj * 
                  glm::lookAt(m_LightInfo.position, m_LightInfo.position + glm::vec3( 0.0, 0.0,-1.0), glm::vec3(0.0,-1.0, 0.0)));
 
 }
@@ -116,6 +113,7 @@ void PointLight::lightUniform(Shader *shader) {
     shader->setUniform("light.color", m_LightInfo.color);
     shader->setUniform("light.position", m_LightInfo.position);
     shader->setUniform("far_plane", far);
+    shader->setUniform("depthMap", 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_DepthCubemap);
 }

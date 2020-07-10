@@ -57,6 +57,8 @@
         "ratio": "cpp",
         "set": "cpp",
         "mutex": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "iomanip": "cpp",
+        "unordered_set": "cpp"
     }
 }

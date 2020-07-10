@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../common/common.h"
+#include "shader.h"
 #include "light.h"
 #include "../camera/camera.h"
 #include "../mesh/mesh.h"
@@ -18,7 +19,8 @@ public:
 
     inline glm::vec3 *getPositionReference() {return &(m_LightInfo.position);}
 
-    void updateShadowmap(const Mesh myMesh);
+    Shader& BeginShadowMap();
+    void EndShadowmap();
 
     void setResolution(const uint shadow_width, const uint shadow_height);
 
@@ -38,6 +40,9 @@ public:
 
 private:
 
+    int m_FormerWidth;
+    int m_FormerHeight;
+
     void m_GenerateCubemap();
     void m_GenerateFBO();
 
@@ -51,7 +56,7 @@ private:
 
     Light m_LightInfo;
 
-    std::vector<glm::mat4> m_ShadowTransforms;
+    std::array<glm::mat4, 6> m_ShadowTransforms;
     
     Camera m_LightCam;
     Shader m_PointShadowShader = Shader("shader/pointShadow.vert",

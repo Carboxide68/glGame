@@ -38,13 +38,13 @@ void main() {
 
     vec3 lightDir = normalize(light.position - FragPos);
     vec3 ambient = material.ambient * ambient;
-    float diff = max(dot(norm, lightDir), 0.0);
+    float diff = abs(dot(norm, lightDir));
     vec3 diffuse = light.color * (diff * material.diffuse);
 
     // specular
     vec3 viewDir = normalize(playerPos - FragPos);
     vec3 halfwayDir = normalize(lightDir + viewDir);  
-    float spec = pow(max(dot(norm, halfwayDir), 0.0), material.specE);
+    float spec = pow(abs(dot(norm, halfwayDir)), material.specE);
     vec3 specular = light.color * (material.specular * spec);
 
     vec3 result = ambient + specular + diffuse;
